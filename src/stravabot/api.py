@@ -22,9 +22,13 @@ class ApiRequest:
 
 @dataclass
 class ApiResponse:
-    body: Union[str, dict]
+    body: Optional[Union[str, dict]] = None
     status: int = 200
     headers: dict = field(default_factory=_default_headers)
+
+    @staticmethod
+    def bad_request():
+        return ApiResponse(status=400)
 
 
 def map_api_request(event: dict) -> ApiRequest:

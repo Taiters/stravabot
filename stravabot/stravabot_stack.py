@@ -14,10 +14,12 @@ from aws_cdk.aws_dynamodb import Table, AttributeType
 
 from stravabot.config import (
     DOMAIN,
+    JWT_SECRET_KEY,
     ROUTES,
     SLACK_BOT_TOKEN,
     SLACK_SIGNING_SECRET,
     STRAVA_CLIENT_ID,
+    STRAVA_CLIENT_SECRET,
     KV_KEY_RECORD,
     KV_TTL_RECORD,
 )
@@ -67,6 +69,8 @@ class StravabotStack(cdk.Stack):
                 "SLACK_BOT_TOKEN": SLACK_BOT_TOKEN,
                 "SLACK_SIGNING_SECRET": SLACK_SIGNING_SECRET,
                 "STRAVA_CLIENT_ID": STRAVA_CLIENT_ID,
+                "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
+                "JWT_SECRET_KEY": JWT_SECRET_KEY,
                 "KV_STORE_TABLE": key_value_store.table_name,
             },
         )

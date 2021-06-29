@@ -67,7 +67,7 @@ def unknown_sub_command(command: str, sub_command: str) -> dict:
     }
 
 
-def connect_response(token, oauth_url) -> dict:
+def connect_response(action_id: str, token: str, oauth_url: str) -> dict:
     return {
         "response_type": "ephemeral",
         "blocks": [
@@ -75,10 +75,22 @@ def connect_response(token, oauth_url) -> dict:
                 text=mrkdwn("Smashing, let's get started :point_right:"),
                 accessory=button(
                     text="Authenticate",
-                    action_id="authenticate",
+                    action_id=action_id,
                     value=token,
                     url=oauth_url,
                 ),
+            )
+        ],
+    }
+
+
+def connect_result(success: bool = True) -> dict:
+    return {
+        "response_type": "ephemeral",
+        "replace_original": True,
+        "blocks": [
+            section(
+                text=mrkdwn("Done :thumbsup:" if success else "Denied :thumbsdown:"),
             )
         ],
     }
