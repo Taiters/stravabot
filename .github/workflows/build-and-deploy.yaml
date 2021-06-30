@@ -26,6 +26,10 @@ jobs:
     needs: 
       - run_tests
     steps:
+      - name: check
+        run: |
+          ls .
+          cat cdk.json
       - name: cdk diff
         uses: youyo/aws-cdk-github-actions@866fe202142f39fda7a05512a4b4fbb711d608fd
         with:
