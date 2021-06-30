@@ -3,12 +3,15 @@ from datetime import timedelta
 
 import requests
 from jose.exceptions import JWTError
+from aws_xray_sdk.core import patch_all
+
 
 from stravabot import auth, strava, messages
 from stravabot.api import Api, ApiRequest, ApiResponse
 from stravabot.db import KeyValueStore
 
 
+patch_all()
 api = Api()
 kv_store = KeyValueStore()
 

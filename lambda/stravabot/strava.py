@@ -2,17 +2,16 @@ from urllib.parse import urlencode
 
 import requests
 
-from stravabot.config import STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
+from stravabot.config import STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_CALLBACK_URL
 
 
 BASE_URL = "https://www.strava.com"
-CALLBACK_URL = f"http://localhost:3000/strava/auth"
 
 
 def get_oauth_url(token):
     params = {
         "client_id": STRAVA_CLIENT_ID,
-        "redirect_uri": f"{CALLBACK_URL}?token={token}",
+        "redirect_uri": f"{STRAVA_CALLBACK_URL}?token={token}",
         "response_type": "code",
         "scope": "read,activity:read",
     }

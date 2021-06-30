@@ -3,7 +3,7 @@ import os
 
 from aws_cdk import core as cdk
 
-from stravabot.stravabot_stack import StravabotStack
+from infx.stravabot_stack import StravabotStack
 
 
 app = cdk.App()

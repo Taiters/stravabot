@@ -12,7 +12,7 @@ from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
 from aws_cdk.aws_certificatemanager import Certificate, CertificateValidation
 from aws_cdk.aws_dynamodb import Table, AttributeType
 
-from stravabot.config import (
+from infx.config import (
     DOMAIN,
     JWT_SECRET_KEY,
     ROUTES,
@@ -61,7 +61,7 @@ class StravabotStack(cdk.Stack):
         api_handler = PythonFunction(
             self,
             "ApiHandlerFunction",
-            entry="./src",
+            entry="./lambda",
             handler="handler",
             index="app.py",
             tracing=Tracing.ACTIVE,
