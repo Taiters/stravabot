@@ -3,7 +3,7 @@ name: Run Tests
 on: [push, pull_request]
 
 jobs:
-  deploy:
+  run_tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,3 +20,18 @@ jobs:
       - name: Test Lambda
         run: |
           pytest lambda/tests
+  
+  cdk_diff:
+    runs-on: ubuntu-latest
+    needs: 
+      - run_tests
+    steps:
+      - name: cdk diff
+        uses: youyo/aws-cdk-github-actions@866fe202142f39fda7a05512a4b4fbb711d608fd
+        with:
+          cdk_subcommand: 'diff'
+          actions_comment: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-west-1
