@@ -11,6 +11,6 @@ def test_utils(freezer):
         month=1,
         day=1,
         hour=1,
-        minute=23,
+        minute=2,
         second=45,
     )
