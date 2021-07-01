@@ -30,7 +30,7 @@ with api.command("/creep") as creep:
         ack(response)
 
 
-@api.slack.action("authenticate_clicked")
+@api.slack.action("authenticate_clicked")  # type: ignore
 def authenticate_clicked(ack, action, body):
     response_url = body["response_url"]
     token = auth.decode_token(action["value"])
@@ -64,9 +64,7 @@ def strava_auth(request: ApiRequest) -> ApiResponse:
         return ApiResponse.bad_request()
 
     if "error" in request.query_parameters:
-        requests.post(
-            result["response_url"], json=messages.connect_result(success=False)
-        )
+        requests.post(result["response_url"], json=messages.connect_result(success=False))
         return ApiResponse(body="Denied")
 
     code = request.query_parameters["code"]

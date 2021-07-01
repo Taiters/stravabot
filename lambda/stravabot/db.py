@@ -21,7 +21,7 @@ class KeyValueStore:
         value: dict,
         ttl: Optional[timedelta] = None,
         expires: Optional[int] = None,
-    ):
+    ) -> None:
         expiry = None
         if ttl:
             expiry = ttl_to_unixtime(ttl)
@@ -37,7 +37,7 @@ class KeyValueStore:
             ReturnValues="NONE",
         )
 
-    def get(self, key):
+    def get(self, key: str) -> Optional[dict]:
         result = self.table.get_item(
             Key={
                 KEY_FIELD: key,
