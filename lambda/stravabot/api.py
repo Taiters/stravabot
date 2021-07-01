@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from collections import defaultdict
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from slack_bolt.app.app import App
 from slack_bolt.adapter.aws_lambda import SlackRequestHandler
@@ -57,7 +57,7 @@ class SubCommand:
 
 
 def _match_sub_command(sub_command: SubCommand) -> Callable[[dict], bool]:
-    def match(command) -> bool:
+    def match(command: dict) -> bool:
         if "text" not in command:
             return False
         return command["text"].strip().lower() == sub_command.text
@@ -66,13 +66,11 @@ def _match_sub_command(sub_command: SubCommand) -> Callable[[dict], bool]:
 
 
 class CommandBuilder:
-    def __init__(
-        self, command: str, slack_app: App, base_handler: Optional[Callable] = None
-    ):
+    def __init__(self, command: str, slack_app: App, base_handler: Optional[Callable] = None):
         self.command = command
         self.slack_app = slack_app
         self.base_handler = base_handler
-        self.sub_commands = []
+        self.sub_commands: List[SubCommand] = []
 
     def __enter__(self):
         return self
@@ -80,11 +78,12 @@ class CommandBuilder:
     def __exit__(self, type, value, traceback):
         for sub_command in self.sub_commands:
             self._add_command(sub_command)
-        self.slack_app.command(self.command)(self._default_handler)
+        self.slack_app.command(self.command)(self._default_handler)  # type: ignore
 
-    def _add_command(self, sub_command: SubCommand):
-        self.slack_app.command(
-            self.command, matchers=[_match_sub_command(sub_command)]
+    def _add_command(self, sub_command: SubCommand) -> None:
+        self.slack_app.command(  # type: ignore
+            self.command,
+            matchers=[_match_sub_command(sub_command)],
         )(sub_command.func)
 
     def _default_handler(self, command, ack):
@@ -112,8 +111,7 @@ class Api:
     def __init__(self):
         self.slack = App(process_before_response=True)
         self.slack_handler = SlackRequestHandler(self.slack)
-        self.routes = defaultdict(dict)
-        self.commands = defaultdict(dict)
+        self.routes: Dict[str, Dict[str, Callable]] = defaultdict(dict)
 
     def route(self, path: str, methods: List[str]) -> Callable:
         def decorator(func: Callable) -> Callable:

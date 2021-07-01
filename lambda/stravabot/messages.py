@@ -1,7 +1,7 @@
-from typing import List, Optional
+from typing import Optional
 
 
-def context(*elements: List[dict]) -> dict:
+def context(*elements: dict) -> dict:
     return {"type": "context", "elements": elements}
 
 
@@ -43,13 +43,7 @@ def help(command: str, sub_commands: list) -> dict:
         "response_type": "ephemeral",
         "blocks": [
             context(mrkdwn("Available commands")),
-            context(
-                mrkdwn(
-                    "\n".join(
-                        f"`{command} {c.text}`\n\t\t{c.help}" for c in sub_commands
-                    )
-                )
-            ),
+            context(mrkdwn("\n".join(f"`{command} {c.text}`\n\t\t{c.help}" for c in sub_commands))),
         ],
     }
 
@@ -58,11 +52,7 @@ def unknown_sub_command(command: str, sub_command: str) -> dict:
     return {
         "response_type": "ephemeral",
         "blocks": [
-            context(
-                mrkdwn(
-                    f"Unknown command: `{sub_command}`\nUse `{command} help` to view available commands"
-                )
-            )
+            context(mrkdwn(f"Unknown command: `{sub_command}`\nUse `{command} help` to view available commands"))
         ],
     }
 

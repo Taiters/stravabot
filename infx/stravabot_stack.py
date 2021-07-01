@@ -1,4 +1,3 @@
-import os
 from aws_cdk import core as cdk
 from aws_cdk.aws_lambda import Tracing
 from aws_cdk.aws_lambda_python import PythonFunction
@@ -10,7 +9,7 @@ from aws_cdk.aws_apigatewayv2 import (
 )
 from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
 from aws_cdk.aws_certificatemanager import Certificate, CertificateValidation
-from aws_cdk.aws_dynamodb import Table, AttributeType
+from aws_cdk.aws_dynamodb import Attribute, Table, AttributeType
 
 from infx.config import (
     DOMAIN,
@@ -26,15 +25,15 @@ from infx.config import (
 
 
 class StravabotStack(cdk.Stack):
-    def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
+    def __init__(self, scope: cdk.Construct, construct_id: str) -> None:
+        super().__init__(scope, construct_id)
         key_value_store = Table(
             self,
             "KeyValueStoreTable",
-            partition_key={
-                "name": KV_KEY_RECORD,
-                "type": AttributeType.STRING,
-            },
+            partition_key=Attribute(
+                name=KV_KEY_RECORD,
+                type=AttributeType.STRING,
+            ),
             time_to_live_attribute=KV_TTL_RECORD,
             read_capacity=1,
             write_capacity=1,
