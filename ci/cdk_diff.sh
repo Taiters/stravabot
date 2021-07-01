@@ -11,16 +11,4 @@ if [ "$exit_code" != "0" ]; then
 fi
 
 diff=$(echo "$output" | awk "/Stack/,/EOF/")
-comment="\`cdk diff\` - $result
-<details><summary>diff</summary>
-\`\`\`
-${diff}
-\`\`\`
-</details>
-"
-payload=$(echo "${comment}" | jq -R --slurp '{body: .}')
-comments_url=$(cat ${GITHUB_EVENT_PATH} | jq -r .pull_request.comments_url)
-
-echo "${payload}" | curl -s -S -H "Authorization: token ${GITHUB_TOKEN}" \
-    --header "Content-Type: application/json" \
-    --data @- "${comments_url}" > /dev/null
+echo "::set-output name=cdk_diff::$diff"
