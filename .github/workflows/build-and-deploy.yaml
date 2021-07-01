@@ -1,11 +1,15 @@
 name: Build and deploy
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  run_tests:
+  build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,11 +35,11 @@ jobs:
           pip install -r lambda/requirements.txt
           pip install boto3
       - name: lint
-        run: |
-          make lint
+        run: make lint
       - name: typing
-        run: |
-          make mypy
+        run: make mypy
       - name: unit tests
-        run: |
-          make unit
+        run: make unit
+      - name: cdk diff
+        if: ${{ github.event_name == 'pull_request' }}
+        run: ci/cdk_diff.sh
