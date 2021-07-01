@@ -42,16 +42,8 @@ jobs:
       - name: unit tests
         run: make unit
       - name: cdk diff
-        id: diff
-        run: ci/cdk_diff.sh
+        run: cdk diff
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: eu-west-1
-      - name: diff comment
-        uses: peter-evans/create-or-update-comment@v1
-        if: ${{ github.event_name == 'pull_request' }}
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            <details><summary>`cdk diff` output</summary>${{ steps.diff.outputs.cdk_diff }}</details>
