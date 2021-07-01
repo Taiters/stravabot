@@ -82,10 +82,3 @@ class StravabotStack(cdk.Stack):
             methods=[HttpMethod.POST],
             integration=integration,
         )
-
-        cdk.CfnOutput(
-            self,
-            "Endpoint",
-            value=api.api_endpoint,
-            description="Endpoint",
-        )
