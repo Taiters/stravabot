@@ -1,19 +1,17 @@
 from datetime import timedelta
 from typing import Optional
-import boto3
 
-from stravabot.config import KV_STORE_TABLE
+from boto3_type_annotations.dynamodb import Table
+
 from stravabot.utils import ttl_to_unixtime
-
 
 KEY_FIELD = "record_key"
 TTL_FIELD = "record_expiry"
 
 
 class KeyValueStore:
-    def __init__(self):
-        dynamodb = boto3.resource("dynamodb")
-        self.table = dynamodb.Table(KV_STORE_TABLE)
+    def __init__(self, table: Table):
+        self.table = table
 
     def put(
         self,

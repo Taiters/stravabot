@@ -1,5 +1,6 @@
 BLACK=black -l 120 -t py36 app.py infx lambda
-black:
+format:
+	isort app.py infx lambda
 	${BLACK}
 
 lint:
@@ -12,6 +13,9 @@ mypy:
 
 unit:
 	pytest tests/
-	pytest lambda/tests
+	STRAVABOT_ENV=test pytest lambda/tests/unit
+
+integration
+	STRAVABOT_ENV=test pytest lambda/tests/integration
 
 test: lint mypy unit
