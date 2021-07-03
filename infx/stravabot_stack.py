@@ -1,5 +1,7 @@
 from aws_cdk import core as cdk
 from aws_cdk.aws_apigatewayv2 import (
+    CfnIntegration,
+    CfnRoute,
     DomainMappingOptions,
     DomainName,
     HttpApi,
@@ -9,7 +11,9 @@ from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
 from aws_cdk.aws_certificatemanager import Certificate, CertificateValidation
 from aws_cdk.aws_dynamodb import Attribute, AttributeType, Table
 from aws_cdk.aws_lambda import Tracing
+from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from aws_cdk.aws_lambda_python import PythonFunction
+from aws_cdk.aws_sqs import Queue
 
 from infx.config import (
     DOMAIN,
@@ -37,6 +41,11 @@ class StravabotStack(cdk.Stack):
             time_to_live_attribute=KV_TTL_RECORD,
             read_capacity=1,
             write_capacity=1,
+        )
+        strava_event_queue = Queue(
+            self,
+            "StravaEventQueue",
+            receive_message_wait_time=cdk.Duration.seconds(20),
         )
         certificate = Certificate(
             self,
@@ -74,6 +83,29 @@ class StravabotStack(cdk.Stack):
                 "STRAVABOT_ENV": "prod",
             },
         )
+        event_handler = PythonFunction(
+            self,
+            "EventHandlerFunction",
+            entry="./lambda",
+            handler="handler",
+            index="events.py",
+            tracing=Tracing.ACTIVE,
+            environment={
+                "SLACK_BOT_TOKEN": SLACK_BOT_TOKEN,
+                "SLACK_SIGNING_SECRET": SLACK_SIGNING_SECRET,
+                "STRAVA_CLIENT_ID": STRAVA_CLIENT_ID,
+                "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
+                "JWT_SECRET_KEY": JWT_SECRET_KEY,
+                "KV_STORE_TABLE": key_value_store.table_name,
+                "STRAVABOT_ENV": "prod",
+            },
+        )
+        event_handler.add_event_source(
+            SqsEventSource(
+                queue=strava_event_queue,
+                max_batching_window=cdk.Duration.minutes(5),
+            )
+        )
         key_value_store.grant_read_write_data(api_handler)
         integration = LambdaProxyIntegration(handler=api_handler)
         for methods, path in ROUTES:
@@ -82,4 +114,28 @@ class StravabotStack(cdk.Stack):
             path="/slack/event",
             methods=[HttpMethod.POST],
             integration=integration,
+        )
+        events_integration = CfnIntegration(
+            self,
+            "StravaEventsIntegration",
+            api_id=api.api_id,
+            integration_type="AWS_PROXY",
+            integration_subtype="SQS-SendMessage",
+            request_parameters={
+                "QueueUrl": strava_event_queue.queue_url,
+                "MessageBody": "$request.body",
+            },
+        )
+        CfnRoute(
+            self,
+            "StravaEventsRoute",
+            api_id=api.api_id,
+            route_key="POST /strava/event",
+            target=cdk.Fn.join(
+                "/",
+                [
+                    "integrations",
+                    events_integration.ref,
+                ],
+            ),
         )
