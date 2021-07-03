@@ -15,7 +15,4 @@ unit:
 	pytest tests/
 	STRAVABOT_ENV=test pytest lambda/tests/unit
 
-integration
-	STRAVABOT_ENV=test pytest lambda/tests/integration
-
 test: lint mypy unit
