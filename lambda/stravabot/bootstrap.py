@@ -25,7 +25,7 @@ def bootstrap() -> Api:
         @creep.on("connect", "Connect to your Strava account")
         def connect(body, ack):
             token = response_urls.generate_token(body["user_id"], timedelta(minutes=10))
-            oauth_url = strava.get_oauth_url(token)
+            oauth_url = strava.get_oauth_url(token.token)
             ack(messages.connect_response(action_id="authenticate_clicked", token=token.token, oauth_url=oauth_url))
 
     @api.slack.action("authenticate_clicked")  # type: ignore

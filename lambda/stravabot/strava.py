@@ -7,7 +7,7 @@ from stravabot.config import STRAVA_CALLBACK_URL, STRAVA_CLIENT_ID, STRAVA_CLIEN
 BASE_URL = "https://www.strava.com"
 
 
-def get_oauth_url(token):
+def get_oauth_url(token: str) -> str:
     params = {
         "client_id": STRAVA_CLIENT_ID,
         "redirect_uri": f"{STRAVA_CALLBACK_URL}?token={token}",
