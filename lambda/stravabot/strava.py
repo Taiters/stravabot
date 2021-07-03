@@ -2,8 +2,7 @@ from urllib.parse import urlencode
 
 import requests
 
-from stravabot.config import STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_CALLBACK_URL
-
+from stravabot.config import STRAVA_CALLBACK_URL, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
 
 BASE_URL = "https://www.strava.com"
 

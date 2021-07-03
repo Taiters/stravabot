@@ -1,9 +1,9 @@
-from dataclasses import dataclass, field
 from collections import defaultdict
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from slack_bolt.app.app import App
 from slack_bolt.adapter.aws_lambda import SlackRequestHandler
+from slack_bolt.app.app import App
 
 from stravabot.messages import help, unknown_sub_command
 

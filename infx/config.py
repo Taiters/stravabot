@@ -2,7 +2,6 @@ from aws_cdk.aws_apigatewayv2 import HttpMethod
 
 from infx.utils import ssm_param
 
-
 DOMAIN = "stravabot.dotslashdan.com"
 
 ROUTES = [

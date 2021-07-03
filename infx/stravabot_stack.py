@@ -1,26 +1,26 @@
 from aws_cdk import core as cdk
-from aws_cdk.aws_lambda import Tracing
-from aws_cdk.aws_lambda_python import PythonFunction
 from aws_cdk.aws_apigatewayv2 import (
-    HttpApi,
-    DomainName,
     DomainMappingOptions,
+    DomainName,
+    HttpApi,
     HttpMethod,
 )
 from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
 from aws_cdk.aws_certificatemanager import Certificate, CertificateValidation
-from aws_cdk.aws_dynamodb import Attribute, Table, AttributeType
+from aws_cdk.aws_dynamodb import Attribute, AttributeType, Table
+from aws_cdk.aws_lambda import Tracing
+from aws_cdk.aws_lambda_python import PythonFunction
 
 from infx.config import (
     DOMAIN,
     JWT_SECRET_KEY,
+    KV_KEY_RECORD,
+    KV_TTL_RECORD,
     ROUTES,
     SLACK_BOT_TOKEN,
     SLACK_SIGNING_SECRET,
     STRAVA_CLIENT_ID,
     STRAVA_CLIENT_SECRET,
-    KV_KEY_RECORD,
-    KV_TTL_RECORD,
 )
 
 

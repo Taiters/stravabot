@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 from stravabot.utils import ttl_to_unixtime
 
