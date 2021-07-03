@@ -1,4 +1,6 @@
 slack-bolt==1.6.1
 python-jose==3.3.0
 requests==2.25.1
+types-requests==2.25.0
 aws-xray-sdk==2.8.0
+boto3-type-annotations==0.3.1
