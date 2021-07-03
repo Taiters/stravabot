@@ -12,3 +12,6 @@ cdk.out
 
 # SAM
 .aws-sam
+
+# Project
+.env.json
