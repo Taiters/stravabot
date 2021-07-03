@@ -26,7 +26,7 @@ def response_urls(mocker):
 
 @pytest.fixture
 def auth_flow(users, tokens, response_urls):
-    return AuthFlow(users, tokens, response_urls)
+    return AuthFlow(users, tokens, response_urls, timedelta(minutes=10))
 
 
 @patch("stravabot.core.auth.messages")

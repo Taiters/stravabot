@@ -2,6 +2,7 @@ import boto3
 
 from stravabot.api import Api
 from stravabot.config import JWT_SECRET_KEY, KV_STORE_TABLE
+from stravabot.config.base import AUTH_FLOW_TTL
 from stravabot.core.auth import AuthFlow
 from stravabot.db import KeyValueStore
 from stravabot.services.response_url import ResponseUrlService
@@ -17,7 +18,7 @@ def bootstrap() -> Api:
     users = UserService(store)
     response_urls = ResponseUrlService(store, tokens)
 
-    auth_flow = AuthFlow(users, tokens, response_urls)
+    auth_flow = AuthFlow(users, tokens, response_urls, AUTH_FLOW_TTL)
 
     with api.command("/creep") as creep:
         creep.on("connect", "Connect to your Strava account")(auth_flow.send_oauth_url)

@@ -31,13 +31,15 @@ class AuthFlow:
         users: UserService,
         tokens: TokenService,
         response_urls: ResponseUrlService,
+        auth_flow_ttl: timedelta,
     ):
         self.users = users
         self.tokens = tokens
         self.response_urls = response_urls
+        self.auth_flow_ttl = auth_flow_ttl
 
     def send_oauth_url(self, ack: Callable, body: dict) -> None:
-        token = self.response_urls.generate_token(body["user_id"], timedelta(minutes=10))
+        token = self.response_urls.generate_token(body["user_id"], self.auth_flow_ttl)
         oauth_url = strava.get_oauth_url(token.token)
         ack(messages.connect_response(action_id="authenticate_clicked", token=token.token, oauth_url=oauth_url))
 
