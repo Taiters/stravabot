@@ -4,7 +4,8 @@ from unittest.mock import patch
 import pytest
 from jose import jwt
 
-from stravabot.services.token import Token, TokenService
+from stravabot.models import Token
+from stravabot.services.token import TokenService
 
 
 @pytest.fixture

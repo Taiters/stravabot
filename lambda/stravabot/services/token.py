@@ -1,18 +1,9 @@
-from dataclasses import dataclass
 from datetime import timedelta
-from typing import Optional
 
 from jose import jwt
 
+from stravabot.models import Token
 from stravabot.utils import ttl_to_unixtime
-
-
-@dataclass
-class Token:
-    slack_user_id: str
-    data: dict
-    token: str
-    expires: Optional[int] = None
 
 
 class TokenService:

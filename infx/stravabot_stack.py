@@ -71,6 +71,7 @@ class StravabotStack(cdk.Stack):
                 "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
                 "JWT_SECRET_KEY": JWT_SECRET_KEY,
                 "KV_STORE_TABLE": key_value_store.table_name,
+                "STRAVABOT_ENV": "prod",
             },
         )
         key_value_store.grant_read_write_data(api_handler)

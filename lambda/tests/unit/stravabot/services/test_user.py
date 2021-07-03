@@ -1,6 +1,7 @@
 import pytest
 
-from stravabot.services.user import User, UserAccessToken, UserService
+from stravabot.models import User, UserAccessToken
+from stravabot.services.user import UserService
 
 
 @pytest.fixture
