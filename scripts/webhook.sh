@@ -1,0 +1,43 @@
+#!/bin/bash
+
+ENDPOINT="https://www.strava.com/api/v3/push_subscriptions"
+
+create_webhook() {
+    url="$1"
+    token="$2"
+    echo "Creating webhook.."
+    echo "Callback URL: $url"
+    echo "Verify token: $token"
+    echo ""
+
+    curl -s -X POST "$ENDPOINT" \
+        -F client_id="$STRAVA_CLIENT_ID" \
+        -F client_secret="$STRAVA_CLIENT_SECRET" \
+        -F callback_url="$url" \
+        -F verify_token="$token" | jq
+}
+
+get_webhook() {
+    curl -s -G "$ENDPOINT" \
+        -d client_id="$STRAVA_CLIENT_ID" \
+        -d client_secret="$STRAVA_CLIENT_SECRET" | jq
+}
+
+delete_webhook() {
+    id="$1"
+    echo "Deleting webhook $id..."
+    curl -s -X DELETE "$ENDPOINT/$id" \
+        -F client_id="$STRAVA_CLIENT_ID" \
+        -F client_secret="$STRAVA_CLIENT_SECRET" | jq
+}
+
+command="$1"
+if [ "$command" == "create" ]; then
+    create_webhook "$2" "$3"
+elif [ "$command" == "get" ]; then
+    get_webhook
+elif [ "$command" == "delete" ]; then
+    delete_webhook "$2"
+else
+    echo "Commands: create, get, delete"
+fi
