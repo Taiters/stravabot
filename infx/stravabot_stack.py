@@ -7,7 +7,7 @@ from aws_cdk.aws_apigatewayv2 import (
 )
 from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
 from aws_cdk.aws_certificatemanager import Certificate, CertificateValidation
-from aws_cdk.aws_dynamodb import Attribute, AttributeType, Table
+from aws_cdk.aws_dynamodb import Attribute, AttributeType, BillingMode, Table
 from aws_cdk.aws_lambda import Tracing
 from aws_cdk.aws_lambda_python import PythonFunction
 
@@ -35,9 +35,15 @@ class StravabotStack(cdk.Stack):
                 name=KV_KEY_RECORD,
                 type=AttributeType.STRING,
             ),
+            billing_mode=BillingMode.PAY_PER_REQUEST,
             time_to_live_attribute=KV_TTL_RECORD,
-            read_capacity=1,
-            write_capacity=1,
+        )
+        key_value_store.add_global_secondary_index(
+            index_name="slack_id",
+            partition_key=Attribute(
+                name="slack_id",
+                type=AttributeType.STRING,
+            ),
         )
         certificate = Certificate(
             self,

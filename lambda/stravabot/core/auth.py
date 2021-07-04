@@ -13,7 +13,7 @@ from stravabot.services.token import TokenService
 from stravabot.services.user import UserService
 
 
-def create_user(athlete_credentials: StravaAthleteCredentials, slack_id: str) -> User:
+def _create_user(athlete_credentials: StravaAthleteCredentials, slack_id: str) -> User:
     return User(
         strava_id=athlete_credentials.id,
         slack_id=slack_id,
@@ -63,7 +63,17 @@ class AuthFlow:
             return ApiResponse(body="Denied")
 
         credentials = strava.get_athlete_credentials(request.query_parameters["code"])
-        self.users.put(create_user(credentials, token.slack_user_id))
+        self.users.put(_create_user(credentials, token.slack_user_id))
 
         requests.post(response_url, json=messages.connect_result())
         return ApiResponse(body="GRAVY")
+
+    def disconnect_user(self, ack: Callable, body: dict) -> None:
+        user_id = body["user_id"]
+        user = self.users.get_by_slack_id(user_id)
+
+        if user is None:
+            ack(messages.disconnect_response("Couldn't find you"))
+        else:
+            strava.deauthorize(user)
+            ack(messages.disconnect_response())

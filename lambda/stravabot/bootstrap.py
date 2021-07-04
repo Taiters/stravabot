@@ -25,6 +25,7 @@ def bootstrap() -> Api:
 
     with api.command("/creep") as creep:
         creep.on("connect", "Connect to your Strava account")(auth_flow.send_oauth_url)
+        creep.on("disconnect", "Disconnect your Strava account")(auth_flow.disconnect_user)
 
     api.slack.action("authenticate_clicked")(auth_flow.store_response_url)  # type: ignore
     api.route("/strava/auth", methods=["GET"])(auth_flow.handle_strava_callback)

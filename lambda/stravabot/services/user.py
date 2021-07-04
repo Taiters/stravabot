@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import Optional
 
-from stravabot.db import KeyValueStore
+from stravabot.db import KeyValueStore, KeyValueStoreIndex
 from stravabot.models import User
 
 
@@ -21,8 +21,14 @@ class UserService:
             value=asdict(user),
         )
 
-    def get(self, user_id: str) -> Optional[User]:
-        data = self.store.get(_key(user_id))
+    def get_by_slack_id(self, user_id: str) -> Optional[User]:
+        return self._get(user_id, index=KeyValueStoreIndex.SLACK_ID)
+
+    def get_by_strava_id(self, user_id: str) -> Optional[User]:
+        return self._get(_key(user_id))
+
+    def _get(self, key: str, index: Optional[KeyValueStoreIndex] = None) -> Optional[User]:
+        data = self.store.get(key, index=index)
         if data is None:
             return None
         return User.from_dict(data)

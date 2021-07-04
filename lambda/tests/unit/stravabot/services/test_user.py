@@ -1,5 +1,6 @@
 import pytest
 
+from stravabot.db import KeyValueStoreIndex
 from stravabot.models import User, UserAccessToken
 from stravabot.services.user import UserService
 
@@ -40,7 +41,7 @@ def test_put_passes_expected_data_to_db(user_service, store):
     )
 
 
-def test_get_returns_expected_user_from_db(user_service, store):
+def test_get_by_strava_id_returns_expected_user_from_db(user_service, store):
     store.get.return_value = {
         "strava_id": "strava",
         "slack_id": "slack",
@@ -50,9 +51,9 @@ def test_get_returns_expected_user_from_db(user_service, store):
             "refresh_token": "another-refresh-token",
         },
     }
-    result = user_service.get("strava")
+    result = user_service.get_by_strava_id("strava")
 
-    store.get.assert_called_once_with("user:strava")
+    store.get.assert_called_once_with("user:strava", index=None)
     assert result == User(
         strava_id="strava",
         slack_id="slack",
@@ -64,6 +65,35 @@ def test_get_returns_expected_user_from_db(user_service, store):
     )
 
 
-def test_get_returns_none_if_no_user_returned(user_service, store):
+def test_get_by_strava_id_returns_none_if_no_user_returned(user_service, store):
     store.get.return_value = None
-    assert user_service.get("something") is None
+    assert user_service.get_by_strava_id("something") is None
+
+
+def test_get_by_slack_id_returns_expected_user_from_db(user_service, store):
+    store.get.return_value = {
+        "strava_id": "strava",
+        "slack_id": "slack",
+        "strava_access_token": {
+            "token": "another-token",
+            "expires_at": 767676,
+            "refresh_token": "another-refresh-token",
+        },
+    }
+    result = user_service.get_by_slack_id("slack")
+
+    store.get.assert_called_once_with("slack", index=KeyValueStoreIndex.SLACK_ID)
+    assert result == User(
+        strava_id="strava",
+        slack_id="slack",
+        strava_access_token=UserAccessToken(
+            token="another-token",
+            expires_at=767676,
+            refresh_token="another-refresh-token",
+        ),
+    )
+
+
+def test_get_by_slack_id_returns_none_if_no_user_returned(user_service, store):
+    store.get.return_value = None
+    assert user_service.get_by_slack_id("something") is None

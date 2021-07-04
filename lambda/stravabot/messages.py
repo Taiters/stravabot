@@ -84,3 +84,18 @@ def connect_result(success: bool = True) -> dict:
             )
         ],
     }
+
+
+def disconnect_response(error: Optional[str] = None) -> dict:
+    if error is None:
+        text = "So long :wave:"
+    else:
+        text = f"Error: {error}"
+    return {
+        "response_type": "ephemeral",
+        "blocks": [
+            section(
+                text=mrkdwn(text),
+            )
+        ],
+    }
