@@ -102,7 +102,7 @@ class StravabotStack(cdk.Stack):
         event_handler.add_event_source(
             SqsEventSource(
                 queue=strava_event_queue,
-                max_batching_window=cdk.Duration.minutes(5),
+                batch_size=1,
             )
         )
         key_value_store.grant_read_write_data(api_handler)
