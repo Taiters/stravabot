@@ -26,3 +26,6 @@ class UserService:
         if data is None:
             return None
         return User.from_dict(data)
+
+    def delete(self, user_id: str) -> None:
+        self.store.delete(_key(user_id))

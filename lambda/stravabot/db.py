@@ -42,3 +42,10 @@ class KeyValueStore:
             },
         )
         return result["Item"] if "Item" in result else None
+
+    def delete(self, key: str) -> None:
+        self.table.delete_item(
+            Key={
+                KEY_FIELD: key,
+            },
+        )

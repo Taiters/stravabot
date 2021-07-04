@@ -9,9 +9,7 @@ from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
 from aws_cdk.aws_certificatemanager import Certificate, CertificateValidation
 from aws_cdk.aws_dynamodb import Attribute, AttributeType, Table
 from aws_cdk.aws_lambda import Tracing
-from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from aws_cdk.aws_lambda_python import PythonFunction
-from aws_cdk.aws_sqs import Queue
 
 from infx.config import (
     DOMAIN,
@@ -23,6 +21,7 @@ from infx.config import (
     SLACK_SIGNING_SECRET,
     STRAVA_CLIENT_ID,
     STRAVA_CLIENT_SECRET,
+    STRAVA_WEBHOOK_VERIFY_TOKEN,
 )
 
 
@@ -39,11 +38,6 @@ class StravabotStack(cdk.Stack):
             time_to_live_attribute=KV_TTL_RECORD,
             read_capacity=1,
             write_capacity=1,
-        )
-        strava_event_queue = Queue(
-            self,
-            "StravaEventQueue",
-            receive_message_wait_time=cdk.Duration.seconds(20),
         )
         certificate = Certificate(
             self,
@@ -64,24 +58,6 @@ class StravabotStack(cdk.Stack):
                 domain_name=domain,
             ),
         )
-        api_handler = PythonFunction(
-            self,
-            "ApiHandlerFunction",
-            entry="./lambda",
-            handler="handler",
-            index="app.py",
-            tracing=Tracing.ACTIVE,
-            environment={
-                "SLACK_BOT_TOKEN": SLACK_BOT_TOKEN,
-                "SLACK_SIGNING_SECRET": SLACK_SIGNING_SECRET,
-                "STRAVA_CLIENT_ID": STRAVA_CLIENT_ID,
-                "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
-                "JWT_SECRET_KEY": JWT_SECRET_KEY,
-                "KV_STORE_TABLE": key_value_store.table_name,
-                "STRAVA_EVENT_QUEUE_URL": strava_event_queue.queue_url,
-                "STRAVABOT_ENV": "prod",
-            },
-        )
         event_handler = PythonFunction(
             self,
             "EventHandlerFunction",
@@ -94,19 +70,34 @@ class StravabotStack(cdk.Stack):
                 "SLACK_SIGNING_SECRET": SLACK_SIGNING_SECRET,
                 "STRAVA_CLIENT_ID": STRAVA_CLIENT_ID,
                 "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
+                "STRAVA_WEBHOOK_VERIFY_TOKEN": STRAVA_WEBHOOK_VERIFY_TOKEN,
                 "JWT_SECRET_KEY": JWT_SECRET_KEY,
                 "KV_STORE_TABLE": key_value_store.table_name,
                 "STRAVABOT_ENV": "prod",
             },
         )
-        event_handler.add_event_source(
-            SqsEventSource(
-                queue=strava_event_queue,
-                batch_size=1,
-            )
+        api_handler = PythonFunction(
+            self,
+            "ApiHandlerFunction",
+            entry="./lambda",
+            handler="handler",
+            index="app.py",
+            tracing=Tracing.ACTIVE,
+            environment={
+                "SLACK_BOT_TOKEN": SLACK_BOT_TOKEN,
+                "SLACK_SIGNING_SECRET": SLACK_SIGNING_SECRET,
+                "STRAVA_CLIENT_ID": STRAVA_CLIENT_ID,
+                "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
+                "STRAVA_WEBHOOK_VERIFY_TOKEN": STRAVA_WEBHOOK_VERIFY_TOKEN,
+                "JWT_SECRET_KEY": JWT_SECRET_KEY,
+                "KV_STORE_TABLE": key_value_store.table_name,
+                "STRAVA_EVENT_HANDLER": event_handler.function_name,
+                "STRAVABOT_ENV": "prod",
+            },
         )
         key_value_store.grant_read_write_data(api_handler)
-        strava_event_queue.grant_send_messages(api_handler)
+        key_value_store.grant_read_write_data(event_handler)
+        event_handler.grant_invoke(api_handler)
         integration = LambdaProxyIntegration(handler=api_handler)
         for methods, path in ROUTES:
             api.add_routes(path=path, methods=methods, integration=integration)

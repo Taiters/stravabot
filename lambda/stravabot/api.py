@@ -54,10 +54,13 @@ def map_api_request(event: dict) -> ApiRequest:
 
 
 def map_api_response(response: ApiResponse) -> dict:
+    body = response.body
+    if response.headers.get("Content-Type") == "application/json":
+        body = json.dumps(body)
     return {
         "statusCode": response.status,
-        "body": response.body,
         "headers": response.headers,
+        "body": body,
     }
 
 
