@@ -6,6 +6,7 @@ DOMAIN = "stravabot.dotslashdan.com"
 
 ROUTES = [
     ([HttpMethod.GET], "/strava/auth"),
+    ([HttpMethod.POST], "/strava/event"),
 ]
 
 KV_KEY_RECORD = "record_key"

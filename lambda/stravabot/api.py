@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import json
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -16,8 +19,12 @@ def _default_headers() -> dict:
 class ApiRequest:
     path: str
     method: str
-    path_parameters: dict
-    query_parameters: dict
+    path_parameters: dict = field(default_factory=dict)
+    query_parameters: dict = field(default_factory=dict)
+    body: str = ""
+
+    def json(self) -> dict:
+        return json.loads(self.body)
 
 
 @dataclass
@@ -27,8 +34,12 @@ class ApiResponse:
     headers: dict = field(default_factory=_default_headers)
 
     @staticmethod
-    def bad_request():
+    def bad_request() -> ApiResponse:
         return ApiResponse(status=400)
+
+    @staticmethod
+    def ok() -> ApiResponse:
+        return ApiResponse(status=200)
 
 
 def map_api_request(event: dict) -> ApiRequest:
@@ -38,6 +49,7 @@ def map_api_request(event: dict) -> ApiRequest:
         method=http["method"],
         path_parameters=event.get("pathParameters", {}),
         query_parameters=event.get("queryStringParameters", {}),
+        body=event.get("body", ""),
     )
 
 

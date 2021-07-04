@@ -1,7 +1,5 @@
 from aws_cdk import core as cdk
 from aws_cdk.aws_apigatewayv2 import (
-    CfnIntegration,
-    CfnRoute,
     DomainMappingOptions,
     DomainName,
     HttpApi,
@@ -80,6 +78,7 @@ class StravabotStack(cdk.Stack):
                 "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
                 "JWT_SECRET_KEY": JWT_SECRET_KEY,
                 "KV_STORE_TABLE": key_value_store.table_name,
+                "STRAVA_EVENT_QUEUE_URL": strava_event_queue.queue_url,
                 "STRAVABOT_ENV": "prod",
             },
         )
@@ -107,6 +106,7 @@ class StravabotStack(cdk.Stack):
             )
         )
         key_value_store.grant_read_write_data(api_handler)
+        strava_event_queue.grant_send_messages(api_handler)
         integration = LambdaProxyIntegration(handler=api_handler)
         for methods, path in ROUTES:
             api.add_routes(path=path, methods=methods, integration=integration)
@@ -114,28 +114,4 @@ class StravabotStack(cdk.Stack):
             path="/slack/event",
             methods=[HttpMethod.POST],
             integration=integration,
-        )
-        events_integration = CfnIntegration(
-            self,
-            "StravaEventsIntegration",
-            api_id=api.api_id,
-            integration_type="AWS_PROXY",
-            integration_subtype="SQS-SendMessage",
-            request_parameters={
-                "QueueUrl": strava_event_queue.queue_url,
-                "MessageBody": "$request.body",
-            },
-        )
-        CfnRoute(
-            self,
-            "StravaEventsRoute",
-            api_id=api.api_id,
-            route_key="POST /strava/event",
-            target=cdk.Fn.join(
-                "/",
-                [
-                    "integrations",
-                    events_integration.ref,
-                ],
-            ),
         )
