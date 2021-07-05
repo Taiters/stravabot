@@ -107,7 +107,7 @@
                 } else if (response.status >= 400 && response.status < 500) {
                     updateMessage("There's a problem");
                     response.json().then(function (data) {
-                        if (data.hasOwnProperty("message")) {
+                        if (data !== null && data.hasOwnProperty("message")) {
                             showSubMessage(data["message"]);
                         } else {
                             showSubMessage("Client error");
