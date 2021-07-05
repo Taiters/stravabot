@@ -27,7 +27,7 @@ def _create_user(athlete_credentials: StravaAthleteCredentials, slack_id: str) -
     )
 
 
-class AuthFlow:
+class StravaAuthHandler:
     def __init__(
         self,
         templates: Environment,
@@ -42,12 +42,22 @@ class AuthFlow:
         self.response_urls = response_urls
         self.auth_flow_ttl = auth_flow_ttl
 
-    def send_oauth_url(self, ack: Callable, body: dict) -> None:
+    def handle_connect_command(self, ack: Callable, body: dict) -> None:
         token = self.response_urls.generate_token(body["user_id"], self.auth_flow_ttl)
         oauth_url = strava.get_oauth_url(token.token)
         ack(messages.connect_response(action_id="authenticate_clicked", token=token.token, oauth_url=oauth_url))
 
-    def store_response_url(self, ack: Callable, body: dict, action: dict) -> None:
+    def handle_disconnect_command(self, ack: Callable, body: dict) -> None:
+        user_id = body["user_id"]
+        user = self.users.get_by_slack_id(user_id)
+
+        if user is None:
+            ack(messages.disconnect_response("Couldn't find you"))
+        else:
+            strava.deauthorize(user)
+            ack(messages.disconnect_response())
+
+    def handle_authenticate_action(self, ack: Callable, body: dict, action: dict) -> None:
         token = self.tokens.decode(action["value"])
         response_url = body["response_url"]
         self.response_urls.put(token, response_url)
@@ -83,13 +93,3 @@ class AuthFlow:
                 "Content-Type": "text/html",
             },
         )
-
-    def disconnect_user(self, ack: Callable, body: dict) -> None:
-        user_id = body["user_id"]
-        user = self.users.get_by_slack_id(user_id)
-
-        if user is None:
-            ack(messages.disconnect_response("Couldn't find you"))
-        else:
-            strava.deauthorize(user)
-            ack(messages.disconnect_response())

@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from stravabot.api import ApiRequest, ApiResponse
-from stravabot.core.auth import AuthFlow
+from stravabot.handlers import StravaAuthHandler
 from stravabot.models import Token, User, UserAccessToken
 from stravabot.services.strava import StravaAthleteCredentials
 
@@ -30,13 +30,13 @@ def templates(mocker):
 
 
 @pytest.fixture
-def auth_flow(templates, users, tokens, response_urls):
-    return AuthFlow(templates, users, tokens, response_urls, timedelta(minutes=10))
+def auth_handler(templates, users, tokens, response_urls):
+    return StravaAuthHandler(templates, users, tokens, response_urls, timedelta(minutes=10))
 
 
-@patch("stravabot.core.auth.messages")
-@patch("stravabot.core.auth.strava")
-def test_send_oauth_url(strava, messages, auth_flow, response_urls, mocker):
+@patch("stravabot.handlers.auth.messages")
+@patch("stravabot.handlers.auth.strava")
+def test_handle_connect_command(strava, messages, auth_handler, response_urls, mocker):
     ack = mocker.Mock()
     response_urls.generate_token.return_value = Token(
         slack_user_id="",
@@ -45,7 +45,7 @@ def test_send_oauth_url(strava, messages, auth_flow, response_urls, mocker):
     )
     strava.get_oauth_url.return_value = "the-oauth-url"
 
-    auth_flow.send_oauth_url(ack, {"user_id": "the-user"})
+    auth_handler.handle_connect_command(ack, {"user_id": "the-user"})
 
     response_urls.generate_token.assert_called_once_with("the-user", timedelta(minutes=10))
     strava.get_oauth_url.assert_called_once_with("the-token")
@@ -57,24 +57,36 @@ def test_send_oauth_url(strava, messages, auth_flow, response_urls, mocker):
     ack.assert_called_once_with(messages.connect_response.return_value)
 
 
-def test_store_response_url(auth_flow, tokens, response_urls, mocker):
+@patch("stravabot.handlers.auth.messages")
+@patch("stravabot.handlers.auth.strava")
+def test_handle_disconnect_command(strava, messages, auth_handler, users, mocker):
+    ack = mocker.Mock()
+
+    auth_handler.handle_disconnect_command(ack, {"user_id": "the-user"})
+
+    users.get_by_slack_id.assert_called_once_with("the-user")
+    strava.deauthorize(users.get_by_slack_id.return_value)
+    ack.assert_called_once_with(messages.disconnect_response.return_value)
+
+
+def test_handle_authenticate_action(auth_handler, tokens, response_urls, mocker):
     ack = mocker.Mock()
     body = {"response_url": "the-response-url"}
     action = {"value": "the-token"}
 
-    auth_flow.store_response_url(ack, body, action)
+    auth_handler.handle_authenticate_action(ack, body, action)
 
     tokens.decode.assert_called_once_with("the-token")
     response_urls.put.assert_called_once_with(tokens.decode.return_value, "the-response-url")
     ack.assert_called_once()
 
 
-@patch("stravabot.core.auth.HOST", "the-host")
-def test_handle_strava_callback_returns_template(mocker, auth_flow, templates):
+@patch("stravabot.handlers.auth.HOST", "the-host")
+def test_handle_strava_callback(mocker, auth_handler, templates):
     template = mocker.Mock()
     templates.get_template.return_value = template
 
-    response = auth_flow.handle_strava_callback(
+    response = auth_handler.handle_strava_callback(
         ApiRequest(
             path="",
             method="",
@@ -96,9 +108,9 @@ def test_handle_strava_callback_returns_template(mocker, auth_flow, templates):
     assert response == ApiResponse(body=template.render.return_value, headers={"Content-Type": "text/html"})
 
 
-@patch("stravabot.core.auth.messages")
-@patch("stravabot.core.auth.strava")
-def test_handle_strava_connect_success(strava, messages, requests_mock, auth_flow, tokens, response_urls, users):
+@patch("stravabot.handlers.auth.messages")
+@patch("stravabot.handlers.auth.strava")
+def test_handle_strava_connect(strava, messages, requests_mock, auth_handler, tokens, response_urls, users):
     tokens.decode.return_value = Token(
         slack_user_id="the-slack-id",
         data={},
@@ -114,7 +126,7 @@ def test_handle_strava_connect_success(strava, messages, requests_mock, auth_flo
     messages.connect_result.return_value = {"message": "result"}
     requests_mock.post("http://the-response-url/")
 
-    response = auth_flow.handle_strava_connect(
+    response = auth_handler.handle_strava_connect(
         ApiRequest(path="", method="", path_parameters={}, body='{"token": "the-token", "code": "the-strava-code"}')
     )
 
