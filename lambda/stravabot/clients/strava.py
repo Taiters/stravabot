@@ -8,7 +8,11 @@ from stravabot.config import HOST, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
 BASE_URL = "https://www.strava.com"
 
 
-class StravaUnauthorizedError(Exception):
+class UnauthorizedError(Exception):
+    pass
+
+
+class InvalidTokenError(Exception):
     pass
 
 
@@ -36,10 +40,12 @@ def oauth_token(code: Optional[str] = None, refresh_token: Optional[str] = None)
     else:
         raise ValueError("Must pass either 'code' or 'refresh_token'")
     response = requests.post(f"{BASE_URL}/api/v3/oauth/token", json=data)
+    if response.status_code == 400:
+        raise InvalidTokenError()
     return response.json()
 
 
 def deauthorize(access_token: str) -> None:
     response = requests.post(f"{BASE_URL}/oauth/deauthorize", params={"access_token": access_token})
     if response.status_code == 401:
-        raise StravaUnauthorizedError()
+        raise UnauthorizedError()

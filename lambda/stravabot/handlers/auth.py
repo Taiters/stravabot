@@ -3,9 +3,11 @@ from typing import Callable
 
 import requests
 from jinja2 import Environment
+from jose.exceptions import ExpiredSignatureError, JWTError
 
 from stravabot import messages
 from stravabot.api import ApiRequest, ApiResponse
+from stravabot.clients.strava import InvalidTokenError
 from stravabot.config import HOST
 from stravabot.models import User, UserAccessToken
 from stravabot.services import strava
@@ -52,7 +54,11 @@ class StravaAuthHandler:
         user = self.users.get_by_slack_id(user_id)
 
         if user is None:
-            ack(messages.disconnect_response("Couldn't find you"))
+            ack(
+                messages.disconnect_response(
+                    "What is this!? I can't find you. You can't disconnect without connecting. Maybe you should connect instead..."
+                )
+            )
         else:
             strava.deauthorize(user)
             ack(messages.disconnect_response())
@@ -68,14 +74,27 @@ class StravaAuthHandler:
         if "token" not in data or "code" not in data:
             return ApiResponse.bad_request()
 
-        token = self.tokens.decode(data["token"])
-        response_url = self.response_urls.get(token, max_attempts=3)
-        if response_url is None:
+        try:
+            token = self.tokens.decode(data["token"])
+        except ExpiredSignatureError:
+            return ApiResponse.bad_request(
+                {
+                    "message": "Token expired",
+                }
+            )
+        except JWTError:
             return ApiResponse.bad_request()
 
-        credentials = strava.get_athlete_credentials(data["code"])
+        try:
+            credentials = strava.get_athlete_credentials(data["code"])
+        except InvalidTokenError:
+            return ApiResponse.bad_request()
+
         self.users.put(_create_user(credentials, token.slack_user_id))
-        requests.post(response_url, json=messages.connect_result())
+        response_url = self.response_urls.get(token, max_attempts=3)
+        if response_url is not None:
+            requests.post(response_url, json=messages.connect_result())
+
         return ApiResponse.ok()
 
     def handle_strava_callback(self, request: ApiRequest) -> ApiResponse:

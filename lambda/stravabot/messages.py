@@ -15,6 +15,10 @@ def section(text: dict, accessory: Optional[dict] = None) -> dict:
     return section
 
 
+def actions(*elements: dict) -> dict:
+    return {"type": "actions", "elements": elements}
+
+
 def mrkdwn(text: str) -> dict:
     return {
         "type": "mrkdwn",
@@ -61,15 +65,14 @@ def connect_response(action_id: str, token: str, oauth_url: str) -> dict:
     return {
         "response_type": "ephemeral",
         "blocks": [
-            section(
-                text=mrkdwn("Smashing, let's get started :point_right:"),
-                accessory=button(
-                    text="Authenticate",
+            actions(
+                button(
+                    text="Connect to Strava",
                     action_id=action_id,
                     value=token,
                     url=oauth_url,
                 ),
-            )
+            ),
         ],
     }
 
@@ -79,23 +82,13 @@ def connect_result(success: bool = True) -> dict:
         "response_type": "ephemeral",
         "replace_original": True,
         "blocks": [
-            section(
-                text=mrkdwn("Done :thumbsup:" if success else "Denied :thumbsdown:"),
-            )
+            context(mrkdwn("Done :thumbsup:" if success else "Denied :thumbsdown:")),
         ],
     }
 
 
 def disconnect_response(error: Optional[str] = None) -> dict:
-    if error is None:
-        text = "So long :wave:"
-    else:
-        text = f"Error: {error}"
     return {
         "response_type": "ephemeral",
-        "blocks": [
-            section(
-                text=mrkdwn(text),
-            )
-        ],
+        "blocks": [context(mrkdwn(error if error else "So long :wave:"))],
     }
