@@ -5,8 +5,8 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from slack_bolt import App
 from slack_bolt.adapter.aws_lambda import SlackRequestHandler
-from slack_bolt.app.app import App
 
 from stravabot.messages import help, unknown_sub_command
 
@@ -75,7 +75,7 @@ def _match_sub_command(sub_command: SubCommand) -> Callable[[dict], bool]:
     def match(command: dict) -> bool:
         if "text" not in command:
             return False
-        return command["text"].strip().lower() == sub_command.text
+        return command["text"].strip().lower().startswith(sub_command.text)
 
     return match
 
@@ -123,8 +123,8 @@ class CommandBuilder:
 
 
 class Api:
-    def __init__(self):
-        self.slack = App(process_before_response=True)
+    def __init__(self, slack: App):
+        self.slack = slack
         self.slack_handler = SlackRequestHandler(self.slack)
         self.routes: Dict[str, Dict[str, Callable]] = defaultdict(dict)
 

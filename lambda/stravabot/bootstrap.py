@@ -1,4 +1,5 @@
 import boto3
+from slack_bolt import App
 
 from stravabot.api import Api
 from stravabot.config import JWT_SECRET_KEY, KV_STORE_TABLE, STRAVA_EVENT_HANDLER
@@ -13,7 +14,8 @@ from stravabot.services.user import UserService
 
 
 def bootstrap() -> Api:
-    api = Api()
+    slack = App(process_before_response=True)
+    api = Api(slack)
     dynamodb = boto3.resource("dynamodb")
     store = KeyValueStore(dynamodb.Table(KV_STORE_TABLE))
     tokens = TokenService(JWT_SECRET_KEY)

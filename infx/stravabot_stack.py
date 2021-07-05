@@ -1,15 +1,7 @@
 from aws_cdk import core as cdk
-from aws_cdk.aws_apigatewayv2 import (
-    DomainMappingOptions,
-    DomainName,
-    HttpApi,
-    HttpMethod,
-)
+from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
-from aws_cdk.aws_certificatemanager import Certificate, CertificateValidation
-from aws_cdk.aws_dynamodb import Attribute, AttributeType, BillingMode, Table
-from aws_cdk.aws_lambda import Tracing
-from aws_cdk.aws_lambda_python import PythonFunction
+from aws_cdk.aws_dynamodb import AttributeType
 
 from infx.config import (
     DOMAIN,
@@ -23,92 +15,55 @@ from infx.config import (
     STRAVA_CLIENT_SECRET,
     STRAVA_WEBHOOK_VERIFY_TOKEN,
 )
+from infx.constructs.api import Api
+from infx.constructs.handler import HandlerFunction
+from infx.constructs.key_value_store import KeyValueStore
 
 
 class StravabotStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str) -> None:
         super().__init__(scope, construct_id)
-        key_value_store = Table(
+        key_value_store = KeyValueStore(self, "KeyValueStore", KV_KEY_RECORD, KV_TTL_RECORD)
+        key_value_store.index_field("slack_id", AttributeType.STRING)
+
+        handler_function = HandlerFunction(
             self,
-            "KeyValueStoreTable",
-            partition_key=Attribute(
-                name=KV_KEY_RECORD,
-                type=AttributeType.STRING,
-            ),
-            billing_mode=BillingMode.PAY_PER_REQUEST,
-            time_to_live_attribute=KV_TTL_RECORD,
-        )
-        key_value_store.add_global_secondary_index(
-            index_name="slack_id",
-            partition_key=Attribute(
-                name="slack_id",
-                type=AttributeType.STRING,
-            ),
-        )
-        certificate = Certificate(
-            self,
-            "Certificate",
-            domain_name=DOMAIN,
-            validation=CertificateValidation.from_dns(),
-        )
-        domain = DomainName(
-            self,
-            "Domain",
-            domain_name=DOMAIN,
-            certificate=certificate,
-        )
-        api = HttpApi(
-            self,
-            "Api",
-            default_domain_mapping=DomainMappingOptions(
-                domain_name=domain,
-            ),
-        )
-        event_handler = PythonFunction(
-            self,
-            "EventHandlerFunction",
-            entry="./lambda",
-            handler="handler",
-            index="events.py",
-            tracing=Tracing.ACTIVE,
-            environment={
+            id="HandlerFunction",
+            src="./lambda",
+            base_environment={
                 "SLACK_BOT_TOKEN": SLACK_BOT_TOKEN,
                 "SLACK_SIGNING_SECRET": SLACK_SIGNING_SECRET,
                 "STRAVA_CLIENT_ID": STRAVA_CLIENT_ID,
                 "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
                 "STRAVA_WEBHOOK_VERIFY_TOKEN": STRAVA_WEBHOOK_VERIFY_TOKEN,
                 "JWT_SECRET_KEY": JWT_SECRET_KEY,
-                "KV_STORE_TABLE": key_value_store.table_name,
                 "STRAVABOT_ENV": "prod",
             },
         )
-        api_handler = PythonFunction(
-            self,
-            "ApiHandlerFunction",
-            entry="./lambda",
-            handler="handler",
-            index="app.py",
-            tracing=Tracing.ACTIVE,
-            environment={
-                "SLACK_BOT_TOKEN": SLACK_BOT_TOKEN,
-                "SLACK_SIGNING_SECRET": SLACK_SIGNING_SECRET,
-                "STRAVA_CLIENT_ID": STRAVA_CLIENT_ID,
-                "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
-                "STRAVA_WEBHOOK_VERIFY_TOKEN": STRAVA_WEBHOOK_VERIFY_TOKEN,
-                "JWT_SECRET_KEY": JWT_SECRET_KEY,
-                "KV_STORE_TABLE": key_value_store.table_name,
+        event_handler = handler_function.handler(
+            "EventHandler",
+            "events.py",
+            "handler",
+            {
+                "KV_STORE_TABLE": key_value_store.table.table_name,
+            },
+        )
+        api_handler = handler_function.handler(
+            "ApiHandler",
+            "app.py",
+            "handler",
+            {
+                "KV_STORE_TABLE": key_value_store.table.table_name,
                 "STRAVA_EVENT_HANDLER": event_handler.function_name,
-                "STRAVABOT_ENV": "prod",
             },
         )
-        key_value_store.grant_read_write_data(api_handler)
-        key_value_store.grant_read_write_data(event_handler)
+
         event_handler.grant_invoke(api_handler)
-        integration = LambdaProxyIntegration(handler=api_handler)
-        for methods, path in ROUTES:
-            api.add_routes(path=path, methods=methods, integration=integration)
-        api.add_routes(
-            path="/slack/event",
-            methods=[HttpMethod.POST],
-            integration=integration,
-        )
+        key_value_store.grant(event_handler)
+        key_value_store.grant(api_handler)
+
+        api = Api(self, "Api", DOMAIN)
+        with api.integration(LambdaProxyIntegration(handler=api_handler)) as integration:
+            integration.add_route("/slack/event", [HttpMethod.POST])
+            for methods, path in ROUTES:
+                integration.add_route(path, methods)
