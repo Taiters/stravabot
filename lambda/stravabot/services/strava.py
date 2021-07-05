@@ -32,7 +32,7 @@ def deauthorize(user: User) -> None:
 
 
 def token_needs_refresh(user: User) -> bool:
-    return user.strava_access_token.expires_at >= time.time()
+    return user.strava_access_token.expires_at <= time.time()
 
 
 def get_refreshed_token(user: User) -> UserAccessToken:
