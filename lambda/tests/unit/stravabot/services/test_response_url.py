@@ -53,7 +53,7 @@ def test_get_returns_expected_url(store, response_url_service):
     store.get.return_value = {"response_url": "https://send-to-here"}
 
     result = response_url_service.get(token)
-    store.get.assert_called_once_with("response_id:a-user-id:a-response-id")
+    store.get.assert_called_once_with("response_id:a-user-id:a-response-id", consistent_read=True)
     assert result == "https://send-to-here"
 
 
