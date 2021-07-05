@@ -64,9 +64,9 @@
 <script>
     var parameters = {{ parameters|tojson }};
 
-    function showCloseButton(message) {
+    function showSubMessage(message) {
         var container = document.getElementById("container");
-        container.innerHTML = '<p>' + message + '</p><a href="#close" onclick="window.close()">Close page</a>';
+        container.innerHTML = '<p>' + message + '</p>';
     }
 
     function showSpinner() {
@@ -78,14 +78,9 @@
         document.getElementById('message').innerText = message;
     }
 
-    function getQueryParams() {
-        var entries = new URLSearchParams(window.location.search);
-        return Object.fromEntries(entries);
-    }
-
-    function handleAuth(query) {
-        var token = query['token'];
-        var code = query['code'];
+    function handleAuth() {
+        var token = parameters['token'];
+        var code = parameters['code'];
         return fetch('{{ host }}/strava/auth', {
             method: 'POST',
             body: { token, code }
@@ -96,20 +91,20 @@
         var query = getQueryParams();
         if (query.hasOwnProperty('error')) {
             updateMessage('Error')
-            showCloseButton(query['error'])
+            showSubMessage(parameters['error'])
         } else if (!query.hasOwnProperty('token') || !query.hasOwnProperty('code')) {
             updateMessage("Oops!");
-            showCloseButton("Some request data is missing");
+            showSubMessage("Some request data is missing");
         } else {
             updateMessage("Connecting...");
             showSpinner();
-            handleAuth(query).then(function() {
+            handleAuth().then(function() {
                 updateMessage("Success");
-                showCloseButton("You're all set");
+                showSubMessage("You're all set");
             })
             .catch(function (error) {
                 updateMessage("Error");
-                showCloseButton(error);
+                showSubMessage(error);
             });
         }
     })()
