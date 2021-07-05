@@ -26,7 +26,7 @@ def mrkdwn(text: str) -> dict:
     }
 
 
-def button(text: str, value: str, action_id: str, url: Optional[str] = None) -> dict:
+def button(text: str, value: str, action_id: str, url: Optional[str] = None, style: str = "default") -> dict:
     button = {
         "type": "button",
         "text": {
@@ -34,6 +34,7 @@ def button(text: str, value: str, action_id: str, url: Optional[str] = None) -> 
             "text": text,
             "emoji": True,
         },
+        "style": style,
         "value": value,
         "action_id": action_id,
     }
@@ -71,6 +72,7 @@ def connect_response(action_id: str, token: str, oauth_url: str) -> dict:
                     action_id=action_id,
                     value=token,
                     url=oauth_url,
+                    style="primary",
                 ),
             ),
         ],

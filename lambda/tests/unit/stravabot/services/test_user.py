@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from stravabot.db import KeyValueStoreIndex
@@ -41,7 +43,9 @@ def test_put_passes_expected_data_to_db(user_service, store):
     )
 
 
-def test_get_by_strava_id_returns_expected_user_from_db(user_service, store):
+@patch("stravabot.services.user.strava")
+def test_get_by_strava_id_returns_expected_user_from_db(strava, user_service, store):
+    strava.token_needs_refresh.return_value = False
     store.get.return_value = {
         "strava_id": "strava",
         "slack_id": "slack",
@@ -70,7 +74,9 @@ def test_get_by_strava_id_returns_none_if_no_user_returned(user_service, store):
     assert user_service.get_by_strava_id("something") is None
 
 
-def test_get_by_slack_id_returns_expected_user_from_db(user_service, store):
+@patch("stravabot.services.user.strava")
+def test_get_by_slack_id_returns_expected_user_from_db(strava, user_service, store):
+    strava.token_needs_refresh.return_value = False
     store.get.return_value = {
         "strava_id": "strava",
         "slack_id": "slack",
