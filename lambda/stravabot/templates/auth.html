@@ -83,7 +83,10 @@
         var code = parameters['code'];
         return fetch('{{ host }}/strava/auth', {
             method: 'POST',
-            body: { token, code }
+            body: JSON.stringify({ token, code }),
+            headers: {
+                'Content-Type': 'application/json',
+            }
         })
     }
 
@@ -98,9 +101,14 @@
         } else {
             updateMessage("Connecting...");
             showSpinner();
-            handleAuth().then(function() {
-                updateMessage("Success");
-                showSubMessage("You're all set");
+            handleAuth().then(function(response) {
+                if (response.status == 200) {
+                    updateMessage("Success");
+                    showSubMessage("You're all set");
+                } else {
+                    updateMessage("Error");
+                    showSubMessage(response.status + ": " + response.statusText);
+                }
             })
             .catch(function (error) {
                 updateMessage("Error");
