@@ -95,7 +95,7 @@ def test_handle_strava_callback_success(strava, messages, requests_mock, auth_fl
     )
 
     tokens.decode.assert_called_once_with("the-token")
-    response_urls.get.assert_called_once_with(tokens.decode.return_value)
+    response_urls.get.assert_called_once_with(tokens.decode.return_value, max_attempts=3)
     strava.get_athlete_credentials.assert_called_once_with("the-strava-code")
     users.put.assert_called_once_with(
         User(

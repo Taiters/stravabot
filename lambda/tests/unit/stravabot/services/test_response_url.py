@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import call, patch
 
 import pytest
 
@@ -61,3 +62,27 @@ def test_get_returns_none_if_no_url_exists(store, response_url_service):
     token = Token(slack_user_id="a-user-id", data={"response_id": "a-response-id"}, expires=2524608300, token="")
     store.get.return_value = None
     assert response_url_service.get(token) is None
+
+
+@patch("stravabot.services.response_url.time")
+def test_get_tries_multiple_times(time_mock, store, response_url_service):
+    token = Token(slack_user_id="a-user-id", data={"response_id": "a-response-id"}, expires=2524608300, token="")
+    store.get.side_effect = [None, {}, {"response_url": "https://send-to-here"}]
+
+    result = response_url_service.get(token, max_attempts=3)
+
+    assert time_mock.sleep.call_count == 2
+    assert store.get.call_args_list == [call("response_id:a-user-id:a-response-id", consistent_read=True)] * 3
+    assert result == "https://send-to-here"
+
+
+@patch("stravabot.services.response_url.time")
+def test_get_tries_up_to_max_attempts_only(time_mock, store, response_url_service):
+    token = Token(slack_user_id="a-user-id", data={"response_id": "a-response-id"}, expires=2524608300, token="")
+    store.get.side_effect = [None, {}, None, {"response_url": "https://send-to-here"}]
+
+    result = response_url_service.get(token, max_attempts=3)
+
+    assert time_mock.sleep.call_count == 2
+    assert store.get.call_args_list == [call("response_id:a-user-id:a-response-id", consistent_read=True)] * 3
+    assert result is None

@@ -1,3 +1,4 @@
+import time
 from datetime import timedelta
 from typing import Optional
 from uuid import uuid4
@@ -29,6 +30,17 @@ class ResponseUrlService:
             expires=token.expires,
         )
 
-    def get(self, token: Token) -> Optional[str]:
+    def get(self, token: Token, max_attempts: int = 1) -> Optional[str]:
+        # Response URL may not have been written yet if user was already authenticated
+        # so we can attempt multiple times (...should tidy this up)
+        attempts = 1
+        result = self._get_response_url(token)
+        while result is None and attempts < max_attempts:
+            time.sleep(0.25)
+            result = self._get_response_url(token)
+            attempts += 1
+        return result
+
+    def _get_response_url(self, token):
         result = self.store.get(_key(token.slack_user_id, token.data["response_id"]), consistent_read=True)
         return result.get("response_url") if result else None

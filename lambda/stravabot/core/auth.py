@@ -54,7 +54,7 @@ class AuthFlow:
             return ApiResponse.bad_request()
 
         token = self.tokens.decode(request.query_parameters["token"])
-        response_url = self.response_urls.get(token)
+        response_url = self.response_urls.get(token, max_attempts=3)
         if response_url is None:
             return ApiResponse.bad_request()
 

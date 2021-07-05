@@ -3,13 +3,7 @@ from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
 from aws_cdk.aws_dynamodb import AttributeType
 
-from infx.config import (
-    DOMAIN,
-    KV_KEY_RECORD,
-    KV_TTL_RECORD,
-    ROUTES,
-    BASE_ENVIRONMENT,
-)
+from infx.config import BASE_ENVIRONMENT, DOMAIN, KV_KEY_RECORD, KV_TTL_RECORD, ROUTES
 from infx.constructs.api import Api
 from infx.constructs.handler import HandlerFunction
 from infx.constructs.key_value_store import KeyValueStore
