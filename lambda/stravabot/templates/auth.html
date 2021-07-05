@@ -91,11 +91,10 @@
     }
 
     (function () {
-        var query = getQueryParams();
-        if (query.hasOwnProperty('error')) {
+        if (parameters['error'] !== null) {
             updateMessage('Error')
             showSubMessage(parameters['error'])
-        } else if (!query.hasOwnProperty('token') || !query.hasOwnProperty('code')) {
+        } else if (parameters['token'] === null || parameters['code'] === null) {
             updateMessage("Oops!");
             showSubMessage("Some request data is missing");
         } else {
