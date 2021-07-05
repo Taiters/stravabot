@@ -5,15 +5,10 @@ from aws_cdk.aws_dynamodb import AttributeType
 
 from infx.config import (
     DOMAIN,
-    JWT_SECRET_KEY,
     KV_KEY_RECORD,
     KV_TTL_RECORD,
     ROUTES,
-    SLACK_BOT_TOKEN,
-    SLACK_SIGNING_SECRET,
-    STRAVA_CLIENT_ID,
-    STRAVA_CLIENT_SECRET,
-    STRAVA_WEBHOOK_VERIFY_TOKEN,
+    BASE_ENVIRONMENT,
 )
 from infx.constructs.api import Api
 from infx.constructs.handler import HandlerFunction
@@ -30,15 +25,7 @@ class StravabotStack(cdk.Stack):
             self,
             id="HandlerFunction",
             src="./lambda",
-            base_environment={
-                "SLACK_BOT_TOKEN": SLACK_BOT_TOKEN,
-                "SLACK_SIGNING_SECRET": SLACK_SIGNING_SECRET,
-                "STRAVA_CLIENT_ID": STRAVA_CLIENT_ID,
-                "STRAVA_CLIENT_SECRET": STRAVA_CLIENT_SECRET,
-                "STRAVA_WEBHOOK_VERIFY_TOKEN": STRAVA_WEBHOOK_VERIFY_TOKEN,
-                "JWT_SECRET_KEY": JWT_SECRET_KEY,
-                "STRAVABOT_ENV": "prod",
-            },
+            base_environment=BASE_ENVIRONMENT,
         )
         event_handler = handler_function.handler(
             "EventHandler",
