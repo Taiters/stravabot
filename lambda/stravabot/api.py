@@ -34,8 +34,8 @@ class ApiResponse:
     headers: dict = field(default_factory=_default_headers)
 
     @staticmethod
-    def bad_request() -> ApiResponse:
-        return ApiResponse(status=400)
+    def bad_request(body: Optional[dict] = None) -> ApiResponse:
+        return ApiResponse(status=400, body=body)
 
     @staticmethod
     def ok() -> ApiResponse:

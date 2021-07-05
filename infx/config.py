@@ -5,7 +5,7 @@ from infx.utils import ssm_param
 DOMAIN = "stravabot.dotslashdan.com"
 
 ROUTES = [
-    ([HttpMethod.GET], "/strava/auth"),
+    ([HttpMethod.POST, HttpMethod.GET], "/strava/auth"),
     ([HttpMethod.POST, HttpMethod.GET], "/strava/event"),
 ]
 

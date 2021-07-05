@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 
 import requests
 
-from stravabot.config import STRAVA_CALLBACK_URL, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
+from stravabot.config import HOST, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET
 
 BASE_URL = "https://www.strava.com"
 
@@ -15,7 +15,7 @@ class StravaUnauthorizedError(Exception):
 def oauth_url(token: str) -> str:
     params = {
         "client_id": STRAVA_CLIENT_ID,
-        "redirect_uri": f"{STRAVA_CALLBACK_URL}?token={token}",
+        "redirect_uri": f"{HOST}/strava/auth?token={token}",
         "response_type": "code",
         "scope": "read,activity:read",
     }

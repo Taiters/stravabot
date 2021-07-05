@@ -5,13 +5,13 @@ from stravabot.clients import strava
 
 
 @patch("stravabot.clients.strava.STRAVA_CLIENT_ID", "strava-client-id")
-@patch("stravabot.clients.strava.STRAVA_CALLBACK_URL", "http://the-callback-url/test")
+@patch("stravabot.clients.strava.HOST", "http://the-host")
 def test_oauth_url_returns_expected_url():
     result = strava.oauth_url("a-token")
     expected_params = urlencode(
         {
             "client_id": "strava-client-id",
-            "redirect_uri": "http://the-callback-url/test?token=a-token",
+            "redirect_uri": "http://the-host/strava/auth?token=a-token",
             "response_type": "code",
             "scope": "read,activity:read",
         }

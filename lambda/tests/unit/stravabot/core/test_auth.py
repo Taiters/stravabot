@@ -25,8 +25,13 @@ def response_urls(mocker):
 
 
 @pytest.fixture
-def auth_flow(users, tokens, response_urls):
-    return AuthFlow(users, tokens, response_urls, timedelta(minutes=10))
+def templates(mocker):
+    return mocker.Mock()
+
+
+@pytest.fixture
+def auth_flow(templates, users, tokens, response_urls):
+    return AuthFlow(templates, users, tokens, response_urls, timedelta(minutes=10))
 
 
 @patch("stravabot.core.auth.messages")
@@ -64,9 +69,36 @@ def test_store_response_url(auth_flow, tokens, response_urls, mocker):
     ack.assert_called_once()
 
 
+@patch("stravabot.core.auth.HOST", "the-host")
+def test_handle_strava_callback_returns_template(mocker, auth_flow, templates):
+    template = mocker.Mock()
+    templates.get_template.return_value = template
+
+    response = auth_flow.handle_strava_callback(
+        ApiRequest(
+            path="",
+            method="",
+            query_parameters={
+                "token": "a-token",
+                "code": "a-code",
+            },
+        )
+    )
+
+    template.render.assert_called_once_with(
+        host="the-host",
+        parameters={
+            "error": None,
+            "token": "a-token",
+            "code": "a-code",
+        },
+    )
+    assert response == ApiResponse(body=template.render.return_value, headers={"Content-Type": "text/html"})
+
+
 @patch("stravabot.core.auth.messages")
 @patch("stravabot.core.auth.strava")
-def test_handle_strava_callback_success(strava, messages, requests_mock, auth_flow, tokens, response_urls, users):
+def test_handle_strava_connect_success(strava, messages, requests_mock, auth_flow, tokens, response_urls, users):
     tokens.decode.return_value = Token(
         slack_user_id="the-slack-id",
         data={},
@@ -82,16 +114,8 @@ def test_handle_strava_callback_success(strava, messages, requests_mock, auth_fl
     messages.connect_result.return_value = {"message": "result"}
     requests_mock.post("http://the-response-url/")
 
-    response = auth_flow.handle_strava_callback(
-        ApiRequest(
-            path="",
-            method="",
-            path_parameters={},
-            query_parameters={
-                "token": "the-token",
-                "code": "the-strava-code",
-            },
-        )
+    response = auth_flow.handle_strava_connect(
+        ApiRequest(path="", method="", path_parameters={}, body='{"token": "the-token", "code": "the-strava-code"}')
     )
 
     tokens.decode.assert_called_once_with("the-token")
@@ -110,8 +134,4 @@ def test_handle_strava_callback_success(strava, messages, requests_mock, auth_fl
     )
     assert requests_mock.call_count == 1
     assert requests_mock.last_request.json() == {"message": "result"}
-    assert response == ApiResponse(
-        body="GRAVY",
-        status=200,
-        headers={"Content-Type": "application/json"},
-    )
+    assert response == ApiResponse.ok()

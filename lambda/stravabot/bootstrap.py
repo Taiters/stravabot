@@ -1,4 +1,5 @@
 import boto3
+from jinja2 import Environment, PackageLoader, select_autoescape
 from slack_bolt import App
 
 from stravabot.api import Api
@@ -14,6 +15,10 @@ from stravabot.services.user import UserService
 
 
 def bootstrap() -> Api:
+    templates = Environment(
+        loader=PackageLoader("stravabot"),
+        autoescape=select_autoescape(),
+    )
     slack = App(process_before_response=True)
     api = Api(slack)
     dynamodb = boto3.resource("dynamodb")
@@ -22,7 +27,7 @@ def bootstrap() -> Api:
     users = UserService(store)
     response_urls = ResponseUrlService(store, tokens)
 
-    auth_flow = AuthFlow(users, tokens, response_urls, AUTH_FLOW_TTL)
+    auth_flow = AuthFlow(templates, users, tokens, response_urls, AUTH_FLOW_TTL)
     api_request_forwarder = ApiRequestForwarder(STRAVA_EVENT_HANDLER, boto3.client("lambda"))
 
     with api.command("/creep") as creep:
@@ -31,6 +36,7 @@ def bootstrap() -> Api:
 
     api.slack.action("authenticate_clicked")(auth_flow.store_response_url)  # type: ignore
     api.route("/strava/auth", methods=["GET"])(auth_flow.handle_strava_callback)
+    api.route("/strava/auth", methods=["POST"])(auth_flow.handle_strava_connect)
     api.route("/strava/event", methods=["POST"])(api_request_forwarder)
     api.route("/strava/event", methods=["GET"])(events.verify)
 

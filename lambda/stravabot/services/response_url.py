@@ -41,6 +41,6 @@ class ResponseUrlService:
             attempts += 1
         return result
 
-    def _get_response_url(self, token):
+    def _get_response_url(self, token: Token) -> Optional[str]:
         result = self.store.get(_key(token.slack_user_id, token.data["response_id"]), consistent_read=True)
         return result.get("response_url") if result else None
