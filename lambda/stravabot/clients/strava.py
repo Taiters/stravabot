@@ -49,3 +49,13 @@ def deauthorize(access_token: str) -> None:
     response = requests.post(f"{BASE_URL}/oauth/deauthorize", params={"access_token": access_token})
     if response.status_code == 401:
         raise UnauthorizedError()
+
+
+def get_activity(activity_id: int, access_token: str) -> dict:
+    response = requests.get(
+        f"{BASE_URL}/api/v3/activities/{activity_id}",
+        headers={
+            "Authorization": access_token,
+        },
+    )
+    return response.json()

@@ -5,7 +5,6 @@ from typing import Optional
 
 from stravabot.db import KeyValueStore, KeyValueStoreIndex
 from stravabot.models import User
-from stravabot.services import strava
 
 
 def _key(user_id: str) -> str:
@@ -32,11 +31,7 @@ class UserService:
         data = self.store.get(key, index=index)
         if data is None:
             return None
-        user = User.from_dict(data)
-        if strava.token_needs_refresh(user):
-            user.strava_access_token = strava.get_refreshed_token(user)
-            self.put(user)
-        return user
+        return User.from_dict(data)
 
     def delete(self, user_id: str) -> None:
         self.store.delete(_key(user_id))

@@ -10,9 +10,8 @@ from stravabot.api import ApiRequest, ApiResponse
 from stravabot.clients.strava import InvalidTokenError
 from stravabot.config import HOST
 from stravabot.models import User, UserAccessToken
-from stravabot.services import strava
 from stravabot.services.response_url import ResponseUrlService
-from stravabot.services.strava import StravaAthleteCredentials
+from stravabot.services.strava import StravaAthleteCredentials, StravaService
 from stravabot.services.token import TokenService
 from stravabot.services.user import UserService
 
@@ -34,19 +33,21 @@ class StravaAuthHandler:
         self,
         templates: Environment,
         users: UserService,
+        strava: StravaService,
         tokens: TokenService,
         response_urls: ResponseUrlService,
         auth_flow_ttl: timedelta,
     ):
         self.templates = templates
         self.users = users
+        self.strava = strava
         self.tokens = tokens
         self.response_urls = response_urls
         self.auth_flow_ttl = auth_flow_ttl
 
     def handle_connect_command(self, ack: Callable, body: dict) -> None:
         token = self.response_urls.generate_token(body["user_id"], self.auth_flow_ttl)
-        oauth_url = strava.get_oauth_url(token.token)
+        oauth_url = self.strava.get_oauth_url(token.token)
         ack(messages.connect_response(action_id="authenticate_clicked", token=token.token, oauth_url=oauth_url))
 
     def handle_disconnect_command(self, ack: Callable, body: dict) -> None:
@@ -60,7 +61,8 @@ class StravaAuthHandler:
                 )
             )
         else:
-            strava.deauthorize(user)
+            with self.strava.session(user) as session:
+                session.deauthorize()
             ack(messages.disconnect_response())
 
     def handle_authenticate_action(self, ack: Callable, body: dict, action: dict) -> None:
@@ -86,7 +88,7 @@ class StravaAuthHandler:
             return ApiResponse.bad_request()
 
         try:
-            credentials = strava.get_athlete_credentials(data["code"])
+            credentials = self.strava.get_athlete_credentials(data["code"])
         except InvalidTokenError:
             return ApiResponse.bad_request()
 

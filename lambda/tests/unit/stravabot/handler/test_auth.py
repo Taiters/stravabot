@@ -15,6 +15,18 @@ def users(mocker):
 
 
 @pytest.fixture
+def session(mocker):
+    return mocker.Mock()
+
+
+@pytest.fixture
+def strava(mocker, session):
+    strava = mocker.MagicMock()
+    strava.session.return_value.__enter__.return_value = session
+    return strava
+
+
+@pytest.fixture
 def tokens(mocker):
     return mocker.Mock()
 
@@ -30,13 +42,12 @@ def templates(mocker):
 
 
 @pytest.fixture
-def auth_handler(templates, users, tokens, response_urls):
-    return StravaAuthHandler(templates, users, tokens, response_urls, timedelta(minutes=10))
+def auth_handler(templates, users, strava, tokens, response_urls):
+    return StravaAuthHandler(templates, users, strava, tokens, response_urls, timedelta(minutes=10))
 
 
 @patch("stravabot.handlers.auth.messages")
-@patch("stravabot.handlers.auth.strava")
-def test_handle_connect_command(strava, messages, auth_handler, response_urls, mocker):
+def test_handle_connect_command(messages, strava, auth_handler, response_urls, mocker):
     ack = mocker.Mock()
     response_urls.generate_token.return_value = Token(
         slack_user_id="",
@@ -58,14 +69,14 @@ def test_handle_connect_command(strava, messages, auth_handler, response_urls, m
 
 
 @patch("stravabot.handlers.auth.messages")
-@patch("stravabot.handlers.auth.strava")
-def test_handle_disconnect_command(strava, messages, auth_handler, users, mocker):
+def test_handle_disconnect_command(messages, strava, session, auth_handler, users, mocker):
     ack = mocker.Mock()
 
     auth_handler.handle_disconnect_command(ack, {"user_id": "the-user"})
 
     users.get_by_slack_id.assert_called_once_with("the-user")
-    strava.deauthorize(users.get_by_slack_id.return_value)
+    strava.session.assert_called_once_with(users.get_by_slack_id.return_value)
+    session.deauthorize.assert_called_once()
     ack.assert_called_once_with(messages.disconnect_response.return_value)
 
 
@@ -109,8 +120,7 @@ def test_handle_strava_callback(mocker, auth_handler, templates):
 
 
 @patch("stravabot.handlers.auth.messages")
-@patch("stravabot.handlers.auth.strava")
-def test_handle_strava_connect(strava, messages, requests_mock, auth_handler, tokens, response_urls, users):
+def test_handle_strava_connect(messages, strava, requests_mock, auth_handler, tokens, response_urls, users):
     tokens.decode.return_value = Token(
         slack_user_id="the-slack-id",
         data={},

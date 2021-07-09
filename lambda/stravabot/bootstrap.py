@@ -9,6 +9,7 @@ from stravabot.db import KeyValueStore
 from stravabot.handlers import StravaAuthHandler, StravaEventHandler
 from stravabot.services.event import EventService
 from stravabot.services.response_url import ResponseUrlService
+from stravabot.services.strava import StravaService
 from stravabot.services.token import TokenService
 from stravabot.services.user import UserService
 
@@ -25,10 +26,11 @@ def bootstrap() -> Api:
 
     tokens = TokenService(JWT_SECRET_KEY)
     users = UserService(store)
+    strava = StravaService(users)
     response_urls = ResponseUrlService(store, tokens)
     events = EventService(STRAVA_EVENT_HANDLER, boto3.client("lambda"))
 
-    auth_handler = StravaAuthHandler(templates, users, tokens, response_urls, AUTH_FLOW_TTL)
+    auth_handler = StravaAuthHandler(templates, users, strava, tokens, response_urls, AUTH_FLOW_TTL)
     with api.command("/creep") as creep:
         creep.on("connect", "Connect to your Strava account")(auth_handler.handle_connect_command)
         creep.on("disconnect", "Disconnect your Strava account")(auth_handler.handle_disconnect_command)

@@ -15,7 +15,7 @@ class UserAccessToken:
 
 @dataclass
 class User:
-    strava_id: str
+    strava_id: int
     slack_id: str
     strava_access_token: UserAccessToken
 
@@ -23,11 +23,11 @@ class User:
     def from_dict(data: dict) -> User:
         token = data["strava_access_token"]
         return User(
-            strava_id=data["strava_id"],
+            strava_id=int(data["strava_id"]),
             slack_id=data["slack_id"],
             strava_access_token=UserAccessToken(
                 token=token["token"],
-                expires_at=token["expires_at"],
+                expires_at=int(token["expires_at"]),
                 refresh_token=token["refresh_token"],
             ),
         )
