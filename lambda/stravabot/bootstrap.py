@@ -7,6 +7,7 @@ from stravabot.config import JWT_SECRET_KEY, KV_STORE_TABLE, STRAVA_EVENT_HANDLE
 from stravabot.config.base import AUTH_FLOW_TTL
 from stravabot.db import KeyValueStore
 from stravabot.handlers import StravaAuthHandler, StravaEventHandler
+from stravabot.handlers.debug import DebugHandler
 from stravabot.services.event import EventService
 from stravabot.services.response_url import ResponseUrlService
 from stravabot.services.strava import StravaService
@@ -30,10 +31,12 @@ def bootstrap() -> Api:
     response_urls = ResponseUrlService(store, tokens)
     events = EventService(STRAVA_EVENT_HANDLER, boto3.client("lambda"))
 
+    debug_handler = DebugHandler(users)
     auth_handler = StravaAuthHandler(templates, users, strava, tokens, response_urls, AUTH_FLOW_TTL)
     with api.command("/creep") as creep:
         creep.on("connect", "Connect to your Strava account")(auth_handler.handle_connect_command)
         creep.on("disconnect", "Disconnect your Strava account")(auth_handler.handle_disconnect_command)
+        creep.on("debug", "Print some debug info")(debug_handler.handle_debug)
 
     api.slack.action("authenticate_clicked")(auth_handler.handle_authenticate_action)  # type: ignore
     api.route("/strava/auth", methods=["GET"])(auth_handler.handle_strava_callback)

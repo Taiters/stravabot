@@ -128,7 +128,7 @@ def test_handle_strava_connect(messages, strava, requests_mock, auth_handler, to
     )
     response_urls.get.return_value = "http://the-response-url/"
     strava.get_athlete_credentials.return_value = StravaAthleteCredentials(
-        id="the-strava-id",
+        id=1234,
         access_token="access-token",
         refresh_token="refresh-token",
         expires_at=1234567,
@@ -145,7 +145,7 @@ def test_handle_strava_connect(messages, strava, requests_mock, auth_handler, to
     strava.get_athlete_credentials.assert_called_once_with("the-strava-code")
     users.put.assert_called_once_with(
         User(
-            strava_id="the-strava-id",
+            strava_id=1234,
             slack_id="the-slack-id",
             strava_access_token=UserAccessToken(
                 token="access-token",

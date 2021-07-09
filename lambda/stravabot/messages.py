@@ -1,4 +1,14 @@
+from __future__ import annotations
+
 from typing import Optional
+
+
+def response(*blocks: dict, response_type: str = "ephemeral", replace_original: bool = False) -> dict:
+    return {
+        "response_type": response_type,
+        "replace_original": replace_original,
+        "blocks": blocks,
+    }
 
 
 def context(*elements: dict) -> dict:

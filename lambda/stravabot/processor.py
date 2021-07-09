@@ -9,4 +9,4 @@ class StravaEventProcessor:
     def process(self, event: StravaEvent) -> None:
         print(event)
         if event.updates.get("authorized") == "false":
-            self.users.delete(str(event.owner_id))
+            self.users.delete(event.owner_id)
