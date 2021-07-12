@@ -18,6 +18,11 @@ def _path(polyline: str, width: int = 3, stroke_color: str = "2CB5F2", stroke_op
     return f"path-{width}+{stroke_color}-{stroke_opacity}({quote_plus(polyline)})"
 
 
+def activity_as_overlay(activity: StravaActivity) -> str:
+    route = polyline.decode(activity.polyline)
+    return f"{_marker(route[0], label='s')},{_marker(route[-1], label='e')},{_path(activity.polyline)}"
+
+
 class MapService:
     def __init__(self, bucket: Bucket):
         self.bucket = bucket
@@ -32,8 +37,7 @@ class MapService:
         return True
 
     def generate_map(self, activity: StravaActivity) -> str:
-        route = polyline.decode(activity.polyline)
-        overlay = f"{_marker(route[0], label='s')},{_marker(route[-1], label='e')},{_path(activity.polyline)}"
+        overlay = activity_as_overlay(activity)
         key = f"routes/{sha224(overlay.encode('utf-8')).hexdigest()}.png"
 
         if not self._exists(key):
