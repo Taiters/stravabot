@@ -73,3 +73,32 @@ class StravaEvent:
             event_time=datetime.fromtimestamp(data["event_time"]),
             updates=data["updates"],
         )
+
+
+@dataclass
+class StravaActivity:
+    activity_id: int
+    name: str
+    description: str
+    distance: int
+    moving_time: int
+    elapsed_time: int
+    average_speed: int
+    polyline: str
+
+    @staticmethod
+    def from_dict(data: dict) -> StravaActivity:
+        return StravaActivity(
+            activity_id=int(data["id"]),
+            name=data["name"],
+            description=data["description"],
+            distance=int(data["distance"]),
+            moving_time=int(data["moving_time"]),
+            elapsed_time=int(data["elapsed_time"]),
+            average_speed=int(data["average_speed"]),
+            polyline=data["map"]["summary_polyline"],
+        )
+
+    @property
+    def seconds_per_km(self) -> int:
+        return int(1000 / (self.distance / self.moving_time))

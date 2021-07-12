@@ -5,10 +5,10 @@ import requests
 from jinja2 import Environment
 from jose.exceptions import ExpiredSignatureError, JWTError
 
-from stravabot import messages
 from stravabot.api import ApiRequest, ApiResponse
 from stravabot.clients.strava import InvalidTokenError
 from stravabot.config import HOST
+from stravabot.messages import actions, button, context, mrkdwn, plain_text, response
 from stravabot.models import User, UserAccessToken
 from stravabot.services.response_url import ResponseUrlService
 from stravabot.services.strava import StravaAthleteCredentials, StravaService
@@ -48,7 +48,19 @@ class StravaAuthHandler:
     def handle_connect_command(self, ack: Callable, body: dict) -> None:
         token = self.response_urls.generate_token(body["user_id"], self.auth_flow_ttl)
         oauth_url = self.strava.get_oauth_url(token.token)
-        ack(messages.connect_response(action_id="authenticate_clicked", token=token.token, oauth_url=oauth_url))
+        ack(
+            response(
+                actions(
+                    button(
+                        text=plain_text("Connect to Strava"),
+                        action_id="authenticate_clicked",
+                        value=token.token,
+                        url=oauth_url,
+                        style="primary",
+                    )
+                )
+            )
+        )
 
     def handle_disconnect_command(self, ack: Callable, body: dict) -> None:
         user_id = body["user_id"]
@@ -56,14 +68,18 @@ class StravaAuthHandler:
 
         if user is None:
             ack(
-                messages.disconnect_response(
-                    "What is this!? I can't find you. You can't disconnect without connecting. Maybe you should connect instead..."
+                response(
+                    context(
+                        mrkdwn(
+                            "What is this!? I can't find you. You can't disconnect without connecting. Maybe you should connect instead..."
+                        )
+                    )
                 )
             )
         else:
             with self.strava.session(user) as session:
                 session.deauthorize()
-            ack(messages.disconnect_response())
+            ack(response(context(mrkdwn("So long :wave:"))))
 
     def handle_authenticate_action(self, ack: Callable, body: dict, action: dict) -> None:
         token = self.tokens.decode(action["value"])
@@ -95,7 +111,13 @@ class StravaAuthHandler:
         self.users.put(_create_user(credentials, token.slack_user_id))
         response_url = self.response_urls.get(token, max_attempts=3)
         if response_url is not None:
-            requests.post(response_url, json=messages.connect_result())
+            requests.post(
+                response_url,
+                json=response(
+                    context(mrkdwn("Connected to Strava")),
+                    replace_original=True,
+                ),
+            )
 
         return ApiResponse.ok()
 

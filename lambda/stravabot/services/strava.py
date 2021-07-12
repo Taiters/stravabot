@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Iterator
 
 from stravabot.clients import strava
-from stravabot.models import User, UserAccessToken
+from stravabot.models import StravaActivity, User, UserAccessToken
 from stravabot.services.user import UserService
 
 
@@ -23,8 +23,9 @@ class StravaSession:
     def deauthorize(self) -> None:
         strava.deauthorize(self.access_token)
 
-    def get_activity(self, id: int) -> dict:
-        return strava.get_activity(id, self.access_token)
+    def activity(self, id: int) -> StravaActivity:
+        data = strava.activity(id, self.access_token)
+        return StravaActivity.from_dict(data)
 
 
 class StravaService:

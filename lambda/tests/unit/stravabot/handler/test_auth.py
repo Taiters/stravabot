@@ -46,8 +46,8 @@ def auth_handler(templates, users, strava, tokens, response_urls):
     return StravaAuthHandler(templates, users, strava, tokens, response_urls, timedelta(minutes=10))
 
 
-@patch("stravabot.handlers.auth.messages")
-def test_handle_connect_command(messages, strava, auth_handler, response_urls, mocker):
+@patch("stravabot.handlers.auth.response")
+def test_handle_connect_command(response, strava, auth_handler, response_urls, mocker):
     ack = mocker.Mock()
     response_urls.generate_token.return_value = Token(
         slack_user_id="",
@@ -60,16 +60,11 @@ def test_handle_connect_command(messages, strava, auth_handler, response_urls, m
 
     response_urls.generate_token.assert_called_once_with("the-user", timedelta(minutes=10))
     strava.get_oauth_url.assert_called_once_with("the-token")
-    messages.connect_response.assert_called_once_with(
-        action_id="authenticate_clicked",
-        token="the-token",
-        oauth_url="the-oauth-url",
-    )
-    ack.assert_called_once_with(messages.connect_response.return_value)
+    ack.assert_called_once_with(response.return_value)
 
 
-@patch("stravabot.handlers.auth.messages")
-def test_handle_disconnect_command(messages, strava, session, auth_handler, users, mocker):
+@patch("stravabot.handlers.auth.response")
+def test_handle_disconnect_command(response, strava, session, auth_handler, users, mocker):
     ack = mocker.Mock()
 
     auth_handler.handle_disconnect_command(ack, {"user_id": "the-user"})
@@ -77,7 +72,7 @@ def test_handle_disconnect_command(messages, strava, session, auth_handler, user
     users.get_by_slack_id.assert_called_once_with("the-user")
     strava.session.assert_called_once_with(users.get_by_slack_id.return_value)
     session.deauthorize.assert_called_once()
-    ack.assert_called_once_with(messages.disconnect_response.return_value)
+    ack.assert_called_once_with(response.return_value)
 
 
 def test_handle_authenticate_action(auth_handler, tokens, response_urls, mocker):
@@ -119,8 +114,8 @@ def test_handle_strava_callback(mocker, auth_handler, templates):
     assert response == ApiResponse(body=template.render.return_value, headers={"Content-Type": "text/html"})
 
 
-@patch("stravabot.handlers.auth.messages")
-def test_handle_strava_connect(messages, strava, requests_mock, auth_handler, tokens, response_urls, users):
+@patch("stravabot.handlers.auth.response")
+def test_handle_strava_connect(response, strava, requests_mock, auth_handler, tokens, response_urls, users):
     tokens.decode.return_value = Token(
         slack_user_id="the-slack-id",
         data={},
@@ -133,7 +128,7 @@ def test_handle_strava_connect(messages, strava, requests_mock, auth_handler, to
         refresh_token="refresh-token",
         expires_at=1234567,
     )
-    messages.connect_result.return_value = {"message": "result"}
+    response.return_value = {"message": "result"}
     requests_mock.post("http://the-response-url/")
 
     response = auth_handler.handle_strava_connect(

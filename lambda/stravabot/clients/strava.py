@@ -51,11 +51,6 @@ def deauthorize(access_token: str) -> None:
         raise UnauthorizedError()
 
 
-def get_activity(activity_id: int, access_token: str) -> dict:
-    response = requests.get(
-        f"{BASE_URL}/api/v3/activities/{activity_id}",
-        headers={
-            "Authorization": access_token,
-        },
-    )
+def activity(activity_id: int, access_token: str) -> dict:
+    response = requests.get(f"{BASE_URL}/api/v3/activities/{activity_id}", params={"access_token": access_token})
     return response.json()

@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from slack_bolt import App
 from slack_bolt.adapter.aws_lambda import SlackRequestHandler
 
-from stravabot.messages import help, unknown_sub_command
+from stravabot.messages import context, mrkdwn, response
 
 
 def _default_headers() -> dict:
@@ -104,9 +104,22 @@ class CommandBuilder:
     def _default_handler(self, command, ack):
         sub_command = command.get("text", "help").strip()
         if sub_command != "help":
-            ack(unknown_sub_command(self.command, sub_command))
+            ack(
+                response(
+                    context(
+                        mrkdwn(
+                            f"Unknown command: `{sub_command}`\nUse `{self.command} help` to view available commands"
+                        )
+                    )
+                )
+            )
         else:
-            ack(help(self.command, self.sub_commands))
+            ack(
+                response(
+                    context(mrkdwn("Available commands")),
+                    context(mrkdwn("\n".join(f"`{self.command} {c.text}`\n\t\t{c.help}" for c in self.sub_commands))),
+                )
+            )
 
     def on(self, text: str, help: Optional[str] = None) -> Callable:
         def decorator(func):
