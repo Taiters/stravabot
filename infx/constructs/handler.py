@@ -11,7 +11,14 @@ class HandlerFunction(cdk.Construct):
         self.src = src
         self.base_environment = base_environment
 
-    def handler(self, name: str, index: str, handler: str, env: Optional[Dict[str, str]] = None) -> PythonFunction:
+    def handler(
+        self,
+        name: str,
+        index: str,
+        handler: str,
+        env: Optional[Dict[str, str]] = None,
+        timeout: Optional[cdk.Duration] = None,
+    ) -> PythonFunction:
         environment = self.base_environment.copy()
         if env:
             environment.update(env)
@@ -23,4 +30,5 @@ class HandlerFunction(cdk.Construct):
             handler=handler,
             tracing=Tracing.ACTIVE,
             environment=environment,
+            timeout=timeout,
         )

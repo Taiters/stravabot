@@ -49,6 +49,9 @@ class StravaService:
     def get_oauth_url(self, token: str) -> str:
         return strava.oauth_url(token)
 
+    def get_activity_url(self, activity: StravaActivity) -> str:
+        return f"{strava.BASE_URL}/activities/{activity.activity_id}"
+
     def get_athlete_credentials(self, code: str) -> StravaAthleteCredentials:
         data = strava.oauth_token(code=code)
         return StravaAthleteCredentials(

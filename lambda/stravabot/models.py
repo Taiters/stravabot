@@ -71,8 +71,48 @@ class StravaEvent:
             aspect_type=StravaAspectType(data["aspect_type"]),
             object_type=StravaObjectType(data["object_type"]),
             event_time=datetime.fromtimestamp(data["event_time"]),
-            updates=data["updates"],
+            updates=data.get("updates", {}),
         )
+
+
+class StravaActivityType(Enum):
+    AlpineSki = "AlpineSki"
+    BackcountrySki = "BackcountrySki"
+    Canoeing = "Canoeing"
+    Crossfit = "Crossfit"
+    EBikeRide = "EBikeRide"
+    Elliptical = "Elliptical"
+    Golf = "Golf"
+    Handcycle = "Handcycle"
+    Hike = "Hike"
+    IceSkate = "IceSkate"
+    InlineSkate = "InlineSkate"
+    Kayaking = "Kayaking"
+    Kitesurf = "Kitesurf"
+    NordicSki = "NordicSki"
+    Ride = "Ride"
+    RockClimbing = "RockClimbing"
+    RollerSki = "RollerSki"
+    Rowing = "Rowing"
+    Run = "Run"
+    Sail = "Sail"
+    Skateboard = "Skateboard"
+    Snowboard = "Snowboard"
+    Snowshoe = "Snowshoe"
+    Soccer = "Soccer"
+    StairStepper = "StairStepper"
+    StandUpPaddling = "StandUpPaddling"
+    Surfing = "Surfing"
+    Swim = "Swim"
+    Velomobile = "Velomobile"
+    VirtualRide = "VirtualRide"
+    VirtualRun = "VirtualRun"
+    Walk = "Walk"
+    WeightTraining = "WeightTraining"
+    Wheelchair = "Wheelchair"
+    Windsurf = "Windsurf"
+    Workout = "Workout"
+    Yoga = "Yoga"
 
 
 @dataclass
@@ -85,6 +125,7 @@ class StravaActivity:
     elapsed_time: int
     average_speed: int
     polyline: str
+    activity_type: StravaActivityType
 
     @staticmethod
     def from_dict(data: dict) -> StravaActivity:
@@ -97,6 +138,7 @@ class StravaActivity:
             elapsed_time=int(data["elapsed_time"]),
             average_speed=int(data["average_speed"]),
             polyline=data["map"]["summary_polyline"],
+            activity_type=StravaActivityType(data["type"]),
         )
 
     @property

@@ -31,6 +31,15 @@ delete_webhook() {
         -F client_secret="$STRAVA_CLIENT_SECRET" | jq
 }
 
+test_webhook() {
+    url="$1"
+    owner_id=$2
+    activity_id=$3
+
+    curl -X POST "$url" -H "Content-Type: application/json" \
+        -d "{\"aspect_type\":\"create\",\"event_time\":11111111,\"object_id\":$activity_id,\"object_type\":\"activity\",\"owner_id\":$owner_id,\"subscription_id\":999999}"
+}
+
 command="$1"
 if [ "$command" == "create" ]; then
     create_webhook "$2" "$3"
@@ -38,6 +47,8 @@ elif [ "$command" == "get" ]; then
     get_webhook
 elif [ "$command" == "delete" ]; then
     delete_webhook "$2"
+elif [ "$command" == "test" ]; then
+    test_webhook "$2" $3 $4
 else
-    echo "Commands: create, get, delete"
+    echo "Commands: create, get, delete, test"
 fi

@@ -42,6 +42,7 @@ class StravabotStack(cdk.Stack):
                 "KV_STORE_TABLE": key_value_store.table.table_name,
                 "CDN_BUCKET": cdn_bucket.bucket_name,
             },
+            timeout=cdk.Duration.seconds(10),
         )
         api_handler = handler_function.handler(
             "ApiHandler",

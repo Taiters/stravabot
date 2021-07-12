@@ -7,9 +7,10 @@ from stravabot.config import JWT_SECRET_KEY, KV_STORE_TABLE, STRAVA_EVENT_HANDLE
 from stravabot.config.base import AUTH_FLOW_TTL
 from stravabot.db import KeyValueStore
 from stravabot.handlers import StravaAuthHandler, StravaEventHandler
-from stravabot.handlers.debug import DebugHandler
+from stravabot.handlers.channel import ChannelHandler
 from stravabot.services.event import EventService
 from stravabot.services.response_url import ResponseUrlService
+from stravabot.services.slack import SlackService
 from stravabot.services.strava import StravaService
 from stravabot.services.token import TokenService
 from stravabot.services.user import UserService
@@ -20,8 +21,8 @@ def bootstrap() -> Api:
         loader=PackageLoader("stravabot"),
         autoescape=select_autoescape(),
     )
-    slack = App(process_before_response=True)
-    api = Api(slack)
+    app = App(process_before_response=True)
+    api = Api(app)
     dynamodb = boto3.resource("dynamodb")
     store = KeyValueStore(dynamodb.Table(KV_STORE_TABLE))
 
@@ -30,13 +31,14 @@ def bootstrap() -> Api:
     strava = StravaService(users)
     response_urls = ResponseUrlService(store, tokens)
     events = EventService(STRAVA_EVENT_HANDLER, boto3.client("lambda"))
+    slack = SlackService(app)
 
-    debug_handler = DebugHandler(users)
+    channel_handler = ChannelHandler(slack)
     auth_handler = StravaAuthHandler(templates, users, strava, tokens, response_urls, AUTH_FLOW_TTL)
     with api.command("/creep") as creep:
         creep.on("connect", "Connect to your Strava account")(auth_handler.handle_connect_command)
         creep.on("disconnect", "Disconnect your Strava account")(auth_handler.handle_disconnect_command)
-        creep.on("debug", "Print some debug info")(debug_handler.handle_debug)
+        creep.on("kick", "Remove from the current channel")(channel_handler.handle_kick_command)
 
     api.slack.action("authenticate_clicked")(auth_handler.handle_authenticate_action)  # type: ignore
     api.route("/strava/auth", methods=["GET"])(auth_handler.handle_strava_callback)
