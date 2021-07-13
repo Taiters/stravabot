@@ -35,12 +35,6 @@ jobs:
           pip install -r lambda/requirements.txt
           pip install boto3
           npm install -g aws-cdk@1.109.0
-      - name: lint
-        run: make lint
-      - name: typing
-        run: make mypy
-      - name: unit tests
-        run: make unit
       - name: cdk diff
         run: cdk diff
         if: ${{ github.event_name == 'pull_request' }}
