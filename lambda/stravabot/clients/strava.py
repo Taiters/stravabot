@@ -12,7 +12,7 @@ class UnauthorizedError(Exception):
     pass
 
 
-class InvalidTokenError(Exception):
+class InvalidStravaTokenError(Exception):
     pass
 
 
@@ -41,7 +41,7 @@ def oauth_token(code: Optional[str] = None, refresh_token: Optional[str] = None)
         raise ValueError("Must pass either 'code' or 'refresh_token'")
     response = requests.post(f"{BASE_URL}/api/v3/oauth/token", json=data)
     if response.status_code == 400:
-        raise InvalidTokenError()
+        raise InvalidStravaTokenError()
     return response.json()
 
 

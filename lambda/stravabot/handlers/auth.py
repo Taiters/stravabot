@@ -3,10 +3,10 @@ from typing import Callable
 
 import requests
 from jinja2 import Environment
-from jose.exceptions import ExpiredSignatureError, JWTError
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
 from stravabot.api import ApiRequest, ApiResponse
-from stravabot.clients.strava import InvalidTokenError
+from stravabot.clients.strava import InvalidStravaTokenError
 from stravabot.config import HOST
 from stravabot.messages import actions, button, context, mrkdwn, plain_text, response
 from stravabot.models import User, UserAccessToken
@@ -100,12 +100,12 @@ class StravaAuthHandler:
                     "message": "Token expired",
                 }
             )
-        except JWTError:
+        except InvalidTokenError:
             return ApiResponse.bad_request()
 
         try:
             credentials = self.strava.get_athlete_credentials(data["code"])
-        except InvalidTokenError:
+        except InvalidStravaTokenError:
             return ApiResponse.bad_request()
 
         self.users.put(_create_user(credentials, token.slack_user_id))

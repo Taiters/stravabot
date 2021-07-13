@@ -2,7 +2,7 @@ from datetime import timedelta
 from unittest.mock import patch
 
 import pytest
-from jose import jwt
+import jwt
 
 from stravabot.models import Token
 from stravabot.services.token import TokenService
@@ -16,7 +16,7 @@ def token_service():
 def test_generate_returns_expected_token_without_ttl(token_service):
     token = token_service.generate(user_id="a-user-id", data={"foo": "bar"})
 
-    decoded_token = jwt.decode(token.token, "secret")
+    decoded_token = jwt.decode(token.token, "secret", ["HS256"])
 
     assert token.expires is None
     assert token.slack_user_id == "a-user-id"
@@ -31,7 +31,7 @@ def test_generate_returns_expected_token_with_ttl(freezer, token_service):
     freezer.move_to("2050-01-01T10:10:10")
     token = token_service.generate(user_id="a-user-id", data={"foo": "bar"}, ttl=timedelta(days=10))
 
-    decoded_token = jwt.decode(token.token, "secret")
+    decoded_token = jwt.decode(token.token, "secret", ["HS256"])
 
     assert token.expires == 2525508610
     assert token.slack_user_id == "a-user-id"
@@ -47,7 +47,7 @@ def test_generate_returns_expected_token_with_ttl(freezer, token_service):
 def test_generate_passes_secret_to_jwt(jwt):
     tokens = TokenService("shh-its-a-secret")
     tokens.generate("a-user", {})
-    jwt.encode.assert_called_once_with({"sub": "a-user"}, "shh-its-a-secret")
+    jwt.encode.assert_called_once_with({"sub": "a-user"}, "shh-its-a-secret", "HS256")
 
 
 def test_decode_returns_expected_token_without_expires(token_service):
@@ -57,6 +57,7 @@ def test_decode_returns_expected_token_without_expires(token_service):
             "some": "data",
         },
         "secret",
+        "HS256",
     )
     assert token_service.decode(token) == Token(
         slack_user_id="a-user-id",
@@ -76,6 +77,7 @@ def test_decode_returns_expected_token_with_expires(token_service):
             "exp": 2525508610,
         },
         "secret",
+        "HS256",
     )
     assert token_service.decode(token) == Token(
         slack_user_id="a-user-id",
@@ -93,4 +95,4 @@ def test_decode_returns_expected_token_with_expires(token_service):
 def test_decode_passes_secret_to_jwt(jwt):
     tokens = TokenService("shh-its-a-secret")
     tokens.decode("a-token")
-    jwt.decode.assert_called_once_with("a-token", "shh-its-a-secret")
+    jwt.decode.assert_called_once_with("a-token", "shh-its-a-secret", ["HS256"])
