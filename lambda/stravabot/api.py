@@ -138,7 +138,7 @@ class CommandBuilder:
 class Api:
     def __init__(self, slack: App):
         self.slack = slack
-        self.slack_handler = None  # SlackRequestHandler(self.slack)
+        self.slack_handler = SlackRequestHandler(self.slack)
         self.routes: Dict[str, Dict[str, Callable]] = defaultdict(dict)
 
     def route(self, path: str, methods: List[str]) -> Callable:
