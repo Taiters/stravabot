@@ -13,7 +13,7 @@ from aws_cdk.aws_cloudfront_origins import S3Origin
 from aws_cdk.aws_dynamodb import AttributeType
 from aws_cdk.aws_s3 import BlockPublicAccess, Bucket
 
-from infx.config import BASE_ENVIRONMENT, DOMAIN, KV_KEY_RECORD, KV_TTL_RECORD, ROUTES
+from infx.config import BASE_ENVIRONMENT, DOMAIN, KV_KEY_RECORD, KV_TTL_RECORD
 from infx.constructs.api import Api
 from infx.constructs.cdn_certificate import CdnCertificate
 from infx.constructs.handler import HandlerFunction
@@ -28,6 +28,13 @@ class StravabotStack(cdk.Stack):
 
         cdn_bucket = Bucket(self, "CdnBucket", block_public_access=BlockPublicAccess.BLOCK_ALL, enforce_ssl=True)
 
+        BASE_ENVIRONMENT.update(
+            {
+                "KV_STORE_TABLE": key_value_store.table.table_name,
+                "CDN_BUCKET": cdn_bucket.bucket_name,
+            }
+        )
+
         handler_function = HandlerFunction(
             self,
             id="HandlerFunction",
@@ -36,34 +43,51 @@ class StravabotStack(cdk.Stack):
         )
         event_handler = handler_function.handler(
             "EventHandler",
-            "events.py",
+            "handlers/event.py",
             "handler",
-            {
-                "KV_STORE_TABLE": key_value_store.table.table_name,
-                "CDN_BUCKET": cdn_bucket.bucket_name,
-            },
-            timeout=cdk.Duration.seconds(10),
+            timeout=cdk.Duration.seconds(30),
         )
-        api_handler = handler_function.handler(
-            "ApiHandler",
-            "app.py",
+        callback_handler = handler_function.handler(
+            "CallbackHandler",
+            "handlers/callback.py",
+            "handler",
+        )
+        connect_handler = handler_function.handler(
+            "ConnectHandler",
+            "handlers/connect.py",
+            "handler",
+        )
+        slack_handler = handler_function.handler(
+            "SlackHandler",
+            "handlers/slack.py",
+            "handler",
+        )
+        verify_handler = handler_function.handler(
+            "VerifyHandler",
+            "handlers/verify.py",
+            "handler",
+        )
+        webhook_handler = handler_function.handler(
+            "WebhookHandler",
+            "handlers/webhook.py",
             "handler",
             {
-                "KV_STORE_TABLE": key_value_store.table.table_name,
                 "STRAVA_EVENT_HANDLER": event_handler.function_name,
             },
         )
 
-        event_handler.grant_invoke(api_handler)
         key_value_store.grant(event_handler)
-        key_value_store.grant(api_handler)
+        key_value_store.grant(connect_handler)
+        key_value_store.grant(slack_handler)
         cdn_bucket.grant_read_write(event_handler)
+        event_handler.grant_invoke(webhook_handler)
 
         api = Api(self, "Api", DOMAIN)
-        with api.integration(LambdaProxyIntegration(handler=api_handler)) as integration:
-            integration.add_route("/slack/event", [HttpMethod.POST])
-            for methods, path in ROUTES:
-                integration.add_route(path, methods)
+        api.integration(LambdaProxyIntegration(handler=callback_handler)).add_route("/strava/auth", [HttpMethod.GET])
+        api.integration(LambdaProxyIntegration(handler=connect_handler)).add_route("/strava/auth", [HttpMethod.POST])
+        api.integration(LambdaProxyIntegration(handler=verify_handler)).add_route("/strava/event", [HttpMethod.GET])
+        api.integration(LambdaProxyIntegration(handler=webhook_handler)).add_route("/strava/event", [HttpMethod.POST])
+        api.integration(LambdaProxyIntegration(handler=slack_handler)).add_route("/slack/event", [HttpMethod.POST])
 
         Distribution(
             self,

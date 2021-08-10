@@ -1,8 +1,8 @@
 from hashlib import sha224
+from typing import Any
 from urllib.parse import quote_plus
 
 import polyline
-from boto3_type_annotations.s3 import Bucket
 from botocore.exceptions import ClientError
 
 from stravabot.clients import mapbox
@@ -24,7 +24,7 @@ def activity_as_overlay(activity: StravaActivity) -> str:
 
 
 class MapService:
-    def __init__(self, bucket: Bucket):
+    def __init__(self, bucket: Any):
         self.bucket = bucket
 
     def _exists(self, key):

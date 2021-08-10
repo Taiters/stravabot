@@ -1,13 +1,6 @@
-from aws_cdk.aws_apigatewayv2 import HttpMethod
-
 from infx.utils import ssm_param
 
 DOMAIN = "stravabot.dotslashdan.com"
-
-ROUTES = [
-    ([HttpMethod.POST, HttpMethod.GET], "/strava/auth"),
-    ([HttpMethod.POST, HttpMethod.GET], "/strava/event"),
-]
 
 KV_KEY_RECORD = "record_key"
 KV_TTL_RECORD = "record_expiry"

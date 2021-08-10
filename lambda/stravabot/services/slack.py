@@ -5,6 +5,8 @@ from slack_sdk.errors import SlackApiError
 class SlackServiceError(Exception):
     pass
 
+class NotInChannelError(SlackServiceError):
+    pass
 
 class SlackService:
     def __init__(self, slack: App):
@@ -29,6 +31,8 @@ class SlackService:
         try:
             result = self.slack.client.conversations_leave(channel=channel_id)
         except SlackApiError as e:
+            if e.response["ok"] is False and e.response["error"] == "not_in_channel":
+                raise NotInChannelError(e)
             raise SlackServiceError(e)
 
         if not result["ok"]:

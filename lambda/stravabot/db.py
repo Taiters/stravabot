@@ -1,9 +1,8 @@
 from datetime import timedelta
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from boto3.dynamodb.conditions import Key
-from boto3_type_annotations.dynamodb import Table
 
 from stravabot.utils import ttl_to_unixtime
 
@@ -16,7 +15,7 @@ class KeyValueStoreIndex(Enum):
 
 
 class KeyValueStore:
-    def __init__(self, table: Table):
+    def __init__(self, table: Any):
         self.table = table
 
     def put(

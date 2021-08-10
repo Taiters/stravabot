@@ -1,5 +1,4 @@
 import boto3
-from aws_xray_sdk.core import patch_all
 from slack_bolt import App
 
 from stravabot.config import CDN_BUCKET, KV_STORE_TABLE
@@ -11,7 +10,6 @@ from stravabot.services.slack import SlackService
 from stravabot.services.strava import StravaService
 from stravabot.services.user import UserService
 
-patch_all()
 app = App(process_before_response=True)
 dynamodb = boto3.resource("dynamodb")
 s3 = boto3.resource("s3")

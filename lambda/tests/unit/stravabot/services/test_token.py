@@ -1,8 +1,8 @@
 from datetime import timedelta
 from unittest.mock import patch
 
-import pytest
 import jwt
+import pytest
 
 from stravabot.models import Token
 from stravabot.services.token import TokenService
