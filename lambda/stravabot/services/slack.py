@@ -5,8 +5,10 @@ from slack_sdk.errors import SlackApiError
 class SlackServiceError(Exception):
     pass
 
+
 class NotInChannelError(SlackServiceError):
     pass
+
 
 class SlackService:
     def __init__(self, slack: App):
