@@ -9,7 +9,7 @@ from stravabot.services.map import MapService
 from stravabot.services.slack import SlackService
 from stravabot.services.strava import StravaService
 from stravabot.services.user import UserService
-from stravabot.utils import seconds_to_minutes
+from stravabot.utils import format_time
 
 
 class StravaEventProcessor:
@@ -44,9 +44,9 @@ class StravaEventProcessor:
                 section(mrkdwn(message)),
                 section(
                     field("Distance", f"{round(activity.distance / 1000, 2)}km"),
-                    field("Pace", f"{seconds_to_minutes(activity.seconds_per_km)}/km"),
-                    field("Elapsed Time", seconds_to_minutes(activity.elapsed_time)),
-                    field("Moving Time", seconds_to_minutes(activity.moving_time)),
+                    field("Pace", f"{format_time(activity.seconds_per_km)}/km"),
+                    field("Elapsed Time", format_time(activity.elapsed_time)),
+                    field("Moving Time", format_time(activity.moving_time)),
                 ),
                 image(
                     image_url=self.maps.generate_map(activity),

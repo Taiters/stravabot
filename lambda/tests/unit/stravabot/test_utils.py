@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from stravabot.utils import seconds_to_minutes, ttl_to_unixtime
+from stravabot.utils import format_time, ttl_to_unixtime
 
 
 def test_ttl_to_unixtime_returns_expcted_timestamp(freezer):
@@ -16,9 +16,17 @@ def test_ttl_to_unixtime_returns_expcted_timestamp(freezer):
     )
 
 
-def test_seconds_to_minutes():
-    assert seconds_to_minutes(1234) == "20:34"
+def test_format_time():
+    assert format_time(1234) == "20:34"
 
 
-def test_seconds_to_minutes_with_float():
-    assert seconds_to_minutes(5678.123) == "94:38"  # type: ignore
+def test_format_time_with_float():
+    assert format_time(1234.123) == "20:34"  # type: ignore
+
+
+def test_format_time_with_hours():
+    assert format_time(5678) == "01:34:38"
+
+
+def test_format_time_with_padding():
+    assert format_time(3723) == "01:02:03"

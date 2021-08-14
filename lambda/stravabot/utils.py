@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from math import floor
 
 
 def ttl_to_unixtime(ttl: timedelta) -> int:
@@ -7,5 +6,9 @@ def ttl_to_unixtime(ttl: timedelta) -> int:
     return round(time.timestamp())
 
 
-def seconds_to_minutes(seconds: int) -> str:
-    return f"{floor(seconds / 60)}:{floor(seconds % 60)}"
+def format_time(seconds: int) -> str:
+    minutes, seconds = divmod(int(seconds), 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours > 0:
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return f"{minutes:02d}:{seconds:02d}"
