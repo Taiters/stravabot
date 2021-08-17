@@ -18,3 +18,4 @@ flake8==3.9.2
 mypy==0.910
 isort==5.9.1
 requests-mock==1.9.3
+types-requests==2.25.0
