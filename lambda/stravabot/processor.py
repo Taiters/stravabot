@@ -1,3 +1,4 @@
+import json
 from stravabot.clients import weather  # Should wrap this up
 from stravabot.messages import context, field, image, mrkdwn, plain_text, section
 from stravabot.models import (
@@ -42,23 +43,28 @@ class StravaEventProcessor:
         weather_condition = weather_data["current"]["condition"]["text"]
         weather_temp = int(weather_data["current"]["temp_c"])
         message = f"<@{user.slack_id}> did the {activity.activity_type.value.lower()}!"
-        self.slack.post_to_channels(
-            text=message,
-            blocks=[
-                section(mrkdwn(message)),
-                section(
-                    field("Distance", f"{round(activity.distance / 1000, 2)}km"),
-                    field("Pace", f"{format_time(activity.seconds_per_km)}/km"),
-                    field("Elapsed Time", format_time(activity.elapsed_time)),
-                    field("Weather", f"{weather_condition} ({weather_temp}℃)"),
-                ),
-                image(
-                    image_url=self.maps.generate_map(activity),
-                    title=plain_text(activity.name),
-                    alt_text=activity.name,
-                ),
-                context(
-                    mrkdwn(f"<{self.strava.get_activity_url(activity)}|Open in Strava> :point_left: give some kudos!")
-                ),
-            ],
-        )
+        blocks = [
+            section(mrkdwn(message)),
+            section(
+                field("Distance", f"{round(activity.distance / 1000, 2)}km"),
+                field("Pace", f"{format_time(activity.seconds_per_km)}/km"),
+                field("Elapsed Time", format_time(activity.elapsed_time)),
+                field("Weather", f"{weather_condition} ({weather_temp}℃)"),
+            ),
+            image(
+                image_url=self.maps.generate_map(activity),
+                title=plain_text(activity.name),
+                alt_text=activity.name,
+            ),
+            context(
+                mrkdwn(f"<{self.strava.get_activity_url(activity)}|Open in Strava> :point_left: give some kudos!")
+            ),
+        ]
+
+        if event.dry_run:
+            print(f"Dry run event: {message}\nBlocks: {json.dumps(blocks, indent=4)}")
+        else:
+            self.slack.post_to_channels(
+                text=message,
+                blocks=blocks,
+            )

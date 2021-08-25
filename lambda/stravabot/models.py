@@ -67,6 +67,7 @@ class StravaEvent:
     object_type: StravaObjectType
     event_time: datetime
     updates: dict
+    dry_run: bool
 
     @staticmethod
     def from_dict(data: dict) -> StravaEvent:
@@ -78,6 +79,7 @@ class StravaEvent:
             object_type=StravaObjectType(data["object_type"]),
             event_time=datetime.fromtimestamp(data["event_time"]),
             updates=data.get("updates", {}),
+            dry_run=data.get("dry_run", False),
         )
 
 
