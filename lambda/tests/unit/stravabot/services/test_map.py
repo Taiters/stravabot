@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 from botocore.exceptions import ClientError
 
-from stravabot.models import StravaActivity, StravaActivityType
+from stravabot.models import Location, StravaActivity, StravaActivityType
 from stravabot.services.map import MapService, activity_as_overlay
 
 
@@ -37,6 +37,7 @@ def test_activity_as_overlay(polyline):
             average_speed=1,
             polyline="the-polyline",
             activity_type=StravaActivityType.Run,
+            start_location=Location(1, 2),
         )
     )
 

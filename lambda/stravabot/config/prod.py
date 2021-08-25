@@ -11,3 +11,4 @@ STRAVA_EVENT_HANDLER = os.environ.get("STRAVA_EVENT_HANDLER", "")
 STRAVA_CALLBACK_URL = "https://stravabot.dotslashdan.com/strava/auth"
 
 MAPBOX_ACCESS_TOKEN = os.environ["MAPBOX_ACCESS_TOKEN"]
+WEATHER_API_KEY = os.environ["WEATHER_API_KEY"]

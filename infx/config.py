@@ -13,5 +13,6 @@ BASE_ENVIRONMENT = {
     "STRAVA_WEBHOOK_VERIFY_TOKEN": ssm_param("strava_webhook_verify_token"),
     "JWT_SECRET_KEY": ssm_param("jwt_secret_key"),
     "MAPBOX_ACCESS_TOKEN": ssm_param("mapbox_access_token"),
+    "WEATHER_API_KEY": ssm_param("weather_api_key"),
     "STRAVABOT_ENV": "prod",
 }

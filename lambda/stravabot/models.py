@@ -41,6 +41,12 @@ class Token:
     expires: Optional[int] = None
 
 
+@dataclass
+class Location:
+    latitude: float
+    longitude: float
+
+
 class StravaAspectType(Enum):
     CREATE = "create"
     UPDATE = "update"
@@ -126,6 +132,7 @@ class StravaActivity:
     average_speed: int
     polyline: str
     activity_type: StravaActivityType
+    start_location: Location
 
     @staticmethod
     def from_dict(data: dict) -> StravaActivity:
@@ -139,6 +146,10 @@ class StravaActivity:
             average_speed=int(data["average_speed"]),
             polyline=data["map"]["summary_polyline"],
             activity_type=StravaActivityType(data["type"]),
+            start_location=Location(
+                latitude=float(data["start_latlng"][0]),
+                longitude=float(data["start_latlng"][1]),
+            ),
         )
 
     @property

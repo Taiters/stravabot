@@ -8,3 +8,4 @@ STRAVA_EVENT_QUEUE_URL = "event-queue-url"
 STRAVA_CALLBACK_URL = "https://strava-callback-url/here"
 
 MAPBOX_ACCESS_TOKEN = "mapbox-token"
+WEATHER_API_KEY = "weather-api-key"
