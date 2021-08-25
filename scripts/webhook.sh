@@ -37,7 +37,7 @@ test_webhook() {
     activity_id=$3
 
     curl -X POST "$url" -H "Content-Type: application/json" \
-        -d "{\"aspect_type\":\"create\",\"event_time\":11111111,\"object_id\":$activity_id,\"object_type\":\"activity\",\"owner_id\":$owner_id,\"subscription_id\":999999}"
+        -d "{\"dry_run\":true,\"aspect_type\":\"create\",\"event_time\":11111111,\"object_id\":$activity_id,\"object_type\":\"activity\",\"owner_id\":$owner_id,\"subscription_id\":999999}"
 }
 
 command="$1"

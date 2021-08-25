@@ -1,4 +1,5 @@
 import json
+
 from stravabot.clients import weather  # Should wrap this up
 from stravabot.messages import context, field, image, mrkdwn, plain_text, section
 from stravabot.models import (
@@ -56,9 +57,7 @@ class StravaEventProcessor:
                 title=plain_text(activity.name),
                 alt_text=activity.name,
             ),
-            context(
-                mrkdwn(f"<{self.strava.get_activity_url(activity)}|Open in Strava> :point_left: give some kudos!")
-            ),
+            context(mrkdwn(f"<{self.strava.get_activity_url(activity)}|Open in Strava> :point_left: give some kudos!")),
         ]
 
         if event.dry_run:
