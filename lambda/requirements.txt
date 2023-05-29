@@ -1,5 +1,5 @@
 slack-bolt==1.6.1
-requests==2.25.1
+requests==2.31.0
 Jinja2==3.0.1
 polyline==1.4.0
 PyJWT==2.1.0
