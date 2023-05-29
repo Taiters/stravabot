@@ -10,7 +10,7 @@ aws-cdk.aws-s3==1.109.0
 aws-cdk.aws-cloudfront==1.109.0
 aws-cdk.aws-cloudfront-origins==1.109.0
 aws-cdk.custom-resources==1.109.0
-black==21.6b0
+black==23.3.0
 pytest==6.2.4
 pytest-mock==3.6.1
 pytest-freezegun==0.4.2
