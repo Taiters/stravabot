@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Optional
 
 import jwt
 
@@ -10,7 +11,7 @@ class TokenService:
     def __init__(self, secret: str):
         self.secret = secret
 
-    def generate(self, user_id: str, data: dict = {}, ttl: timedelta = None) -> Token:
+    def generate(self, user_id: str, data: dict = {}, ttl: Optional[timedelta] = None) -> Token:
         data = data.copy()
         data["sub"] = user_id
         if ttl:
