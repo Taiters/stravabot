@@ -16,3 +16,10 @@ unit:
 	STRAVABOT_ENV=test pytest lambda/tests/unit
 
 test: lint mypy unit
+
+install:
+	python -m pip install --upgrade pip
+	pip install -r requirements.txt
+	pip install -r lambda/requirements.txt
+	pip install boto3
+	npm install -g aws-cdk@1.109.0
