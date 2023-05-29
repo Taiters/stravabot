@@ -29,12 +29,7 @@ jobs:
         with:
           node-version: '14'
       - name: install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r lambda/requirements.txt
-          pip install boto3
-          npm install -g aws-cdk@1.109.0
+        run: make install
       - name: lint
         run: make lint
       - name: typing
