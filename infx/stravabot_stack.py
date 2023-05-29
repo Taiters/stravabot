@@ -1,6 +1,6 @@
 from aws_cdk import core as cdk
 from aws_cdk.aws_apigatewayv2 import HttpMethod
-from aws_cdk.aws_apigatewayv2_integrations import HttpLambdaIntegration
+from aws_cdk.aws_apigatewayv2_integrations import LambdaProxyIntegration
 from aws_cdk.aws_certificatemanager import Certificate
 from aws_cdk.aws_cloudfront import (
     AllowedMethods,
@@ -83,11 +83,11 @@ class StravabotStack(cdk.Stack):
         event_handler.grant_invoke(webhook_handler)
 
         api = Api(self, "Api", DOMAIN)
-        api.integration(HttpLambdaIntegration(handler=callback_handler)).add_route("/strava/auth", [HttpMethod.GET])
-        api.integration(HttpLambdaIntegration(handler=connect_handler)).add_route("/strava/auth", [HttpMethod.POST])
-        api.integration(HttpLambdaIntegration(handler=verify_handler)).add_route("/strava/event", [HttpMethod.GET])
-        api.integration(HttpLambdaIntegration(handler=webhook_handler)).add_route("/strava/event", [HttpMethod.POST])
-        api.integration(HttpLambdaIntegration(handler=slack_handler)).add_route("/slack/event", [HttpMethod.POST])
+        api.integration(LambdaProxyIntegration(handler=callback_handler)).add_route("/strava/auth", [HttpMethod.GET])
+        api.integration(LambdaProxyIntegration(handler=connect_handler)).add_route("/strava/auth", [HttpMethod.POST])
+        api.integration(LambdaProxyIntegration(handler=verify_handler)).add_route("/strava/event", [HttpMethod.GET])
+        api.integration(LambdaProxyIntegration(handler=webhook_handler)).add_route("/strava/event", [HttpMethod.POST])
+        api.integration(LambdaProxyIntegration(handler=slack_handler)).add_route("/slack/event", [HttpMethod.POST])
 
         Distribution(
             self,
