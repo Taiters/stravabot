@@ -22,4 +22,4 @@ install:
 	pip install -r requirements.txt
 	pip install -r lambda/requirements.txt
 	pip install boto3
-	npm install -g aws-cdk@1.109.0
+	npm install -g aws-cdk@1.202.0
