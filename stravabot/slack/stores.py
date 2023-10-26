@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta, tzinfo
 import logging
+from typing import Optional
 from uuid import UUID
 from django.utils import timezone
 from slack_sdk.oauth.state_store import OAuthStateStore
+from slack_sdk.oauth.installation_store import InstallationStore, Installation
 
 from stravabot.models import SlackAuthState
 
@@ -30,3 +32,20 @@ class StravabotSlackOAuthStateStore(OAuthStateStore):
         still_valid = expires_at > timezone.now()
         existing_state.delete()
         return still_valid
+
+
+class StravabotSlackInstallationStore(InstallationStore):
+    pass
+    def save(self, installation: Installation):
+        """Saves an installation data"""
+        raise NotImplementedError()
+
+    def find_bot(
+        self,
+        *,
+        enterprise_id: Optional[str],
+        team_id: Optional[str],
+        is_enterprise_install: Optional[bool] = False,
+    ) -> Optional[Bot]:
+        """Finds a bot scope installation per workspace / org"""
+        raise NotImplementedError()
