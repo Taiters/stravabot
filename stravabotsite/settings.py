@@ -27,7 +27,8 @@ SECRET_KEY = 'django-insecure-t^ds(!!c(h=1xwg!y*i75!=a9-bi#j2m0&k&^9xr!x@#t6@5tp
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '053d-23-100-9-193.ngrok-free.app'
+    '127.0.0.1',
+    '0096-51-137-83-35.ngrok-free.app',
 ]
 
 
@@ -130,6 +131,8 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # App specific stuff
-BASE_URL = 'https://053d-23-100-9-193.ngrok-free.app'
+BASE_URL = 'https://0096-51-137-83-35.ngrok-free.app'
+SLACK_APP_ID = os.environ["SLACK_APP_ID"]
 SLACK_CLIENT_ID = os.environ['SLACK_CLIENT_ID']
 SLACK_CLIENT_SECRET = os.environ['SLACK_CLIENT_SECRET']
+SLACK_SIGNING_SECRET = os.environ['SLACK_SIGNING_SECRET']
