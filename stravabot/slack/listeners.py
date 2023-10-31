@@ -77,3 +77,8 @@ def help(ack):
             for c in commands
         ],
     })
+
+
+@app.action("authenticate_strava")
+def authenticate_strava(ack: Callable) -> None:
+    ack()

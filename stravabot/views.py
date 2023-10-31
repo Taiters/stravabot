@@ -1,6 +1,4 @@
-from django.shortcuts import render
+from django.http import HttpResponse
 
-def index(request):
-    return render(request, 'stravabot/index.html', {
-        'slack_auth_url': '1234',
-    })
+def strava_oauth_redirect(request):
+    return HttpResponse("Hello!")

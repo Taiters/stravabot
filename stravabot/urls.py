@@ -15,9 +15,9 @@ def slack_oauth_handler(request):
     return handler.handle(request)
 
 urlpatterns = [
-    path("", views.index, name="index"),
-
     path("slack/events", slack_events_handler, name="slack_events"),
     path("slack/install", slack_oauth_handler, name="slack_install"),
     path("slack/oauth_redirect", slack_oauth_handler, name="slack_authorize"),
+
+    path("strava/oauth_redirect", views.strava_oauth_redirect, name="strava_authorize")
 ]
