@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '0096-51-137-83-35.ngrok-free.app',
+    '217e-20-254-24-187.ngrok-free.app',
 ]
 
 
@@ -131,8 +131,13 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # App specific stuff
-BASE_URL = 'https://0096-51-137-83-35.ngrok-free.app'
+BASE_URL = 'https://217e-20-254-24-187.ngrok-free.app'
+BOT_NAME = 'testbot'
+
 SLACK_APP_ID = os.environ["SLACK_APP_ID"]
 SLACK_CLIENT_ID = os.environ['SLACK_CLIENT_ID']
 SLACK_CLIENT_SECRET = os.environ['SLACK_CLIENT_SECRET']
 SLACK_SIGNING_SECRET = os.environ['SLACK_SIGNING_SECRET']
+
+STRAVA_CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
+STRAVA_CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']

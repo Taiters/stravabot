@@ -1,0 +1,4 @@
+Django==3.2.22
+slack-bolt==1.18.0
+slack-sdk==3.23.0
+stravalib==1.0.0
