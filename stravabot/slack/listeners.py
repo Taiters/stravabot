@@ -33,7 +33,6 @@ app = App(
     ),
 )
 
-
 def _match_name(name) -> Callable[[dict], bool]:
     def match(command: dict) -> bool:
         if "text" not in command:

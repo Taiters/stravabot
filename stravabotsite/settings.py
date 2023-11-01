@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '217e-20-254-24-187.ngrok-free.app',
+    '46f8-20-68-26-252.ngrok-free.app'
 ]
 
 
@@ -131,7 +131,7 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # App specific stuff
-BASE_URL = 'https://217e-20-254-24-187.ngrok-free.app'
+BASE_URL = 'https://46f8-20-68-26-252.ngrok-free.app'
 BOT_NAME = 'testbot'
 
 SLACK_APP_ID = os.environ["SLACK_APP_ID"]

@@ -10,7 +10,6 @@ handler = SlackRequestHandler(app=app)
 def slack_events_handler(request):
     return handler.handle(request)
 
-
 def slack_oauth_handler(request):
     return handler.handle(request)
 

@@ -2,53 +2,71 @@ from typing import Callable
 from stravalib import Client
 from django.conf import settings
 
-strava_client = Client()
+from ..oauth.store import JWTOAuthStateStore
 
-def connect(ack, command):
-    authorize_url = strava_client.authorization_url(
-        client_id=settings.STRAVA_CLIENT_ID, redirect_uri=settings.BASE_URL + "/strava/oauth_redirect",
+strava_client = Client()
+state_store = JWTOAuthStateStore(expiration_seconds=120)
+
+def connect(ack, context, command, body, client):
+    ack()
+    response = client.views_open(
+        trigger_id=body['trigger_id'],
+        view={
+            "type": "modal",
+            "title": {
+                "type": "plain_text",
+                "text": "Connect to Strava",
+                "emoji": True
+            },
+            "blocks": [],
+        } 
     )
-    user_id = command['user_id']
-    ack(
-        {
-            "response_type": "ephemeral",
+    view_id = response['view']['id']
+
+    state = state_store.issue(extra_fields={
+        'team_id': context['team_id'],
+        'user_id': command['user_id'],
+        'view_id': view_id,
+    })
+    authorize_url = strava_client.authorization_url(
+        client_id=settings.STRAVA_CLIENT_ID,
+        redirect_uri=settings.BASE_URL + "/strava/oauth_redirect",
+        state=state,
+    )
+
+    client.views_update(
+        view_id=view_id,
+        view={
+            "type": "modal",
+            "title": {
+                "type": "plain_text",
+                "text": "Connect to Strava",
+                "emoji": True
+            },
             "blocks": [
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"Hi <@{user_id}> :wave:"
+                        "text": f"*Hi <@{command['user_id']}>!*",
                     }
                 },
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "Can't wait to get you set up!",
+                        "text": "Click to connect to your Strava account"
+                    },
+                    "accessory": {
+                        "type": "button",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "Connect",
+                            "emoji": True
+                        },
+                        "style": "primary",
+                        "url": authorize_url,
                     }
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "In order to get started, click the botton below to connect your Strava account",
-                    }
-                },
-                {
-                    "type": "actions",
-                    "elements": [
-                        {
-                            "type": "button",
-                            "text": {
-                                "type": "plain_text",
-                                "text": "Connect to Strava",
-                                "emoji":True,
-                            },
-                            "style": "primary",
-                            "action_id": "authenticate_strava",
-                            "url": authorize_url,
-                        }
-                    ]
                 }
             ]
         }

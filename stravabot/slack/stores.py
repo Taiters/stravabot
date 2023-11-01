@@ -1,14 +1,13 @@
 import logging
 from typing import Optional
-from uuid import UUID, uuid4
 from django.conf import settings
 from django.db.models import F
-from django.utils import timezone
 from django.utils.timezone import is_naive, make_aware
 from slack_sdk.oauth import InstallationStore, OAuthStateStore
 from slack_sdk.oauth.installation_store import Bot, Installation
 
-from ..models import SlackBot, SlackInstallation, SlackOAuthState
+from .models import SlackBot, SlackInstallation
+from ..oauth.store import JWTOAuthStateStore
 
 
 class DjangoInstallationStore(InstallationStore):
@@ -176,34 +175,14 @@ class DjangoInstallationStore(InstallationStore):
         return None
 
 
-class DjangoOAuthStateStore(OAuthStateStore):
-    expiration_seconds: int
-
+class DjangoOAuthStateStore(JWTOAuthStateStore, OAuthStateStore):
     def __init__(
         self,
         expiration_seconds: int,
     ):
-        self.expiration_seconds = expiration_seconds
         self._logger = logging.getLogger(__name__)
+        super().__init__(expiration_seconds)
 
     @property
     def logger(self):
         return self._logger
-
-    def issue(self) -> str:
-        state = uuid4()
-        row = SlackOAuthState(state=state, created_at=timezone.now())
-        row.save()
-        return state
-
-    def consume(self, state: str) -> bool:
-        existing_states = SlackOAuthState.objects.filter(state=UUID(state))
-        if not existing_states:
-            return False
-        
-        for s in existing_states:
-            s.delete()
-        earliest_creation = min([s.created_at for s in existing_states])
-        expires_at = earliest_creation + timezone.timedelta(seconds=self.expiration_seconds)
-
-        return timezone.now() < expires_at
