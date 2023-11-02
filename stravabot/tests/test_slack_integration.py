@@ -1,7 +1,8 @@
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 import pytest
 from django.urls import reverse
 from django.test import Client
+from django.conf import settings
 from slack_sdk.oauth import OAuthStateUtils
 from stravabot.slack.stores import DjangoOAuthStateStore, DjangoInstallationStore
 
@@ -41,6 +42,12 @@ def test_authorize(mock_oauth_v2_access, mock_auth_test):
         'state': state,
     })
 
+    mock_oauth_v2_access.assert_called_once_with(
+        code='abcd',
+        client_id=settings.SLACK_CLIENT_ID,
+        client_secret=settings.SLACK_CLIENT_SECRET,
+        redirect_uri=ANY,
+    )
     assert result.status_code == 200
 
     bot = installation_store.find_bot(enterprise_id=None, team_id='the-team-id')

@@ -14,11 +14,11 @@ class SlackBot(models.Model):
     bot_user_id = models.CharField(null=True, max_length=32)
     bot_scopes = models.TextField(null=True)
     is_enterprise_install = models.BooleanField(null=True)
-    installed_at = models.DateTimeField(null=False)
+    installed_at = models.DateTimeField(null=False, auto_now_add=True)
 
     users = models.ManyToManyField(User)
 
     class Meta:
-        indexes = [
-            models.Index(fields=["enterprise_id", "team_id", "installed_at"]),
+        constraints = [
+            models.UniqueConstraint(fields=["enterprise_id", "team_id"], name="unique_enterprise_and_team")
         ]

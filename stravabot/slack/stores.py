@@ -33,19 +33,11 @@ class DjangoInstallationStore(InstallationStore):
         if b.get("bot_token_expires_at") is not None and is_naive(b["bot_token_expires_at"]):
             b["bot_token_expires_at"] = make_aware(b["bot_token_expires_at"])
 
-        row_to_update = (
-            SlackBot.objects
-                .filter(enterprise_id=bot.enterprise_id)
-                .filter(team_id=bot.team_id)
-                .filter(installed_at=b["installed_at"])
-                .first()
+        SlackBot.objects.update_or_create(
+            enterprise_id=bot.enterprise_id,
+            team_id=bot.team_id,
+            defaults=b,
         )
-        if row_to_update is not None:
-            for key, value in b.items():
-                setattr(row_to_update, key, value)
-            row_to_update.save()
-        else:
-            SlackBot(**b).save()
 
     def find_bot(
         self,
@@ -58,12 +50,7 @@ class DjangoInstallationStore(InstallationStore):
         t_id = team_id or None
         if is_enterprise_install:
             t_id = None
-        rows = (
-            SlackBot.objects
-                .filter(enterprise_id=e_id)
-                .filter(team_id=t_id)
-                .order_by(F("installed_at").desc())[:1]
-        )
+        rows = SlackBot.objects.filter(enterprise_id=e_id, team_id=t_id)
         if len(rows) > 0:
             b = rows[0]
             return Bot(
