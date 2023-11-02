@@ -43,10 +43,7 @@ def test_authorize(mock_oauth_v2_access, mock_auth_test):
 
     assert result.status_code == 200
 
-    installation = installation_store.find_installation(enterprise_id=None, team_id='the-team-id', user_id='the-authed-user')
     bot = installation_store.find_bot(enterprise_id=None, team_id='the-team-id')
 
-    assert installation.bot_token == 'the-access-token'
-    assert installation.bot_refresh_token == 'the-refresh-token'
     assert bot.bot_token == 'the-access-token'
     assert bot.bot_refresh_token == 'the-refresh-token'

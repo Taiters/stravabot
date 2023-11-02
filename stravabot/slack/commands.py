@@ -24,6 +24,7 @@ def connect(ack, context, command, body, client):
     view_id = response['view']['id']
 
     state = state_store.issue(extra_fields={
+        'enterprise_id': context['enterprise_id'],
         'team_id': context['team_id'],
         'user_id': command['user_id'],
         'view_id': view_id,

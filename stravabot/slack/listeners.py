@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 app = App(
     signing_secret=settings.SLACK_SIGNING_SECRET,
+    installation_store_bot_only=True,
     oauth_settings=OAuthSettings(
         client_id=settings.SLACK_CLIENT_ID,
         client_secret=settings.SLACK_CLIENT_SECRET,
@@ -76,8 +77,3 @@ def help(ack):
             for c in commands
         ],
     })
-
-
-@app.action("authenticate_strava")
-def authenticate_strava(ack: Callable) -> None:
-    ack()

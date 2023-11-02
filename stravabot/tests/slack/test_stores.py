@@ -61,8 +61,6 @@ def test_store_team_installation():
         installed_at=timezone.datetime(year=2023, month=1, day=23),
     ))
 
-    installation = installation_store.find_installation(enterprise_id=None, team_id='team_id', user_id='user_id')
     bot = installation_store.find_bot(enterprise_id=None, team_id='team_id')
 
-    assert installation is not None
     assert bot is not None

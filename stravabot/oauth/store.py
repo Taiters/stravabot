@@ -7,7 +7,7 @@ import jwt
 class JWTOAuthStateStore:
     expiration_time_seconds: int
 
-    def __init__(self, expiration_seconds: int):
+    def __init__(self, expiration_seconds: int=120):
         self.expiration_seconds = expiration_seconds
 
     def issue(self, extra_fields={}) -> str:
