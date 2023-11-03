@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib import admin
+from django_cryptography.fields import encrypt
 
 from stravabot.models import User
 
@@ -7,8 +9,8 @@ class SlackBot(models.Model):
     enterprise_name = models.TextField(null=True)
     team_id = models.CharField(null=True, max_length=32)
     team_name = models.TextField(null=True)
-    bot_token = models.TextField(null=True)
-    bot_refresh_token = models.TextField(null=True)
+    bot_token = encrypt(models.TextField(null=True))
+    bot_refresh_token = encrypt(models.TextField(null=True))
     bot_token_expires_at = models.DateTimeField(null=True)
     bot_id = models.CharField(null=True, max_length=32)
     bot_user_id = models.CharField(null=True, max_length=32)
@@ -22,3 +24,5 @@ class SlackBot(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["enterprise_id", "team_id"], name="unique_enterprise_and_team")
         ]
+
+admin.site.register(SlackBot)

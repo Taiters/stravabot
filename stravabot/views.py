@@ -1,5 +1,7 @@
+from datetime import datetime
 from django.conf import settings
 from django.http import HttpResponse
+from django.utils.timezone import make_aware
 
 from stravabot.slack.models import SlackBot
 
@@ -29,10 +31,10 @@ def strava_oauth_redirect(request):
     strava.access_token = token_response['access_token']
     athlete = strava.get_athlete()
 
-    user = User.objects.update_or_create(strava_athlete_id=athlete.id, defaults={
+    user, _ = User.objects.update_or_create(strava_athlete_id=athlete.id, defaults={
         'strava_access_token': token_response['access_token'],
         'strava_refresh_token': token_response['refresh_token'],
-        'strava_token_expires_at': token_response['expires_at'],
+        'strava_token_expires_at': make_aware(datetime.fromtimestamp(token_response['expires_at'])),
     })
     slack_bot = SlackBot.objects.get(team_id=team_id, enterprise_id=enterprise_id)
     slack_bot.users.add(user)

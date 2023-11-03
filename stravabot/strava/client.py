@@ -6,7 +6,7 @@ from stravalib.client import Client
 
 from ..models import User
 
-def get_strava_client(user_id: Optional[str], refresh_buffer_minutes=120) -> Client:
+def get_strava_client(user_id: Optional[str]=None, refresh_buffer_minutes=120) -> Client:
     if user_id is None:
         return Client()
 

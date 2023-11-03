@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '46f8-20-68-26-252.ngrok-free.app'
+    f'{os.environ["NGROK_DOMAIN"]}.ngrok-free.app',
 ]
 
 
@@ -63,7 +63,6 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'stravabot.context_processors.context',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -131,7 +130,7 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # App specific stuff
-BASE_URL = 'https://46f8-20-68-26-252.ngrok-free.app'
+BASE_URL = f'https://{os.environ["NGROK_DOMAIN"]}.ngrok-free.app'
 BOT_NAME = 'testbot'
 
 SLACK_APP_ID = os.environ["SLACK_APP_ID"]

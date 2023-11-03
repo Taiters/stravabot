@@ -1,8 +1,9 @@
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 from django.urls import reverse
 from django.utils import timezone
 import pytest
 from django.test import Client
+from stravabot.models import User
 
 from stravabot.oauth.store import JWTOAuthStateStore
 from stravabot.slack.models import SlackBot
@@ -33,7 +34,23 @@ def test_authorize(mock_get_slack_client, mock_get_strava_client):
     mock_strava_client.get_athlete.return_value.id = 'strava-athlete-id'
     client = Client()
 
-    client.get(reverse('strava_authorize'), {
+    response = client.get(reverse('strava_authorize'), {
         'code': 'abcd',
         'state': state,
     })
+
+    assert response.status_code == 200
+
+    user = User.objects.get(strava_athlete_id='strava-athlete-id')
+    assert user.strava_access_token == 'strava-access-token'
+    assert user.strava_refresh_token == 'strava-refresh-token'
+    assert user.strava_token_expires_at.timestamp() == strava_token_expiration_time
+
+    mock_get_slack_client.assert_called_once_with(
+        team_id='a-team-id',
+        enterprise_id=None,
+    )
+    mock_slack_client.views_update.assert_called_once_with(
+        view_id='a-view-id',
+        view=ANY,
+    )
